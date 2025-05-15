@@ -41,7 +41,7 @@ const QuickAction: React.FC<QuickActionProps> = ({
 
 const QuickActions: React.FC = () => {
   return (
-    <div className="bg-truckmaster-dark p-5 rounded-lg border-none shadow-none">
+    <div className="bg-truckmaster-card-bg p-5 rounded-lg border border-white/5">
       <h2 className="text-white font-medium mb-4">Quick Actions</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <QuickAction 

@@ -19,22 +19,20 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <DataProvider>
       <TooltipProvider>
-        <div className="bg-truckmaster-dark min-h-screen border-none outline-none overflow-hidden">
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="loads" element={<LoadsPage />} />
-                <Route path="drivers" element={<DriversPage />} />
-                <Route path="calendar" element={<CalendarPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </div>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="loads" element={<LoadsPage />} />
+              <Route path="drivers" element={<DriversPage />} />
+              <Route path="calendar" element={<CalendarPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
       </TooltipProvider>
     </DataProvider>
   </QueryClientProvider>

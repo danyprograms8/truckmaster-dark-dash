@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useData } from './DataProvider';
 import { Truck, Users, Calendar, CheckCircle } from 'lucide-react';
@@ -33,11 +34,11 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="px-6 py-6 lg:px-8 bg-truckmaster-dark border-none">
+    <div className="px-6 py-6 lg:px-8">
       <h2 className="text-3xl font-bold mb-6">Dashboard</h2>
       
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 border-none">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         {/* Available Trucks Card - now opens a modal */}
         <div onClick={() => setIsTruckModalOpen(true)}>
           <MetricCard 
@@ -85,37 +86,39 @@ const Dashboard: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Chart and Activity Section - with consistent styling */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 border-none bg-transparent">
-        <div className="lg:col-span-2 border-none">
-          <Card className="border-none shadow-none overflow-hidden box-border bg-truckmaster-dark">
-            <CardHeader className="border-none">
+      {/* Chart and Activity Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
               <CardTitle>Loads Booked (Last 7 Days)</CardTitle>
             </CardHeader>
-            <CardContent className="pt-2 border-none">
+            <CardContent className="pt-2">
               <LoadsChart data={loadTrend} />
             </CardContent>
           </Card>
         </div>
-        <div className="lg:col-span-1 border-none">
-          <Card className="h-full border-none shadow-none overflow-hidden box-border bg-truckmaster-dark">
-            <CardHeader className="border-none">
+        <div className="lg:col-span-1">
+          <Card className="h-full">
+            <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
-            <CardContent className="pt-2 border-none">
+            <CardContent className="pt-2">
               <RecentActivity />
             </CardContent>
           </Card>
         </div>
       </div>
       
-      {/* Quick Actions - with consistent styling and no borders */}
-      <div className="border-none bg-transparent mt-0 pt-0">
-        <div className="border-none bg-truckmaster-dark shadow-none">
-          <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
           <QuickActions />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

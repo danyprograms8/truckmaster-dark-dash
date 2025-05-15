@@ -7,8 +7,7 @@ import {
   Truck, 
   Users, 
   Calendar, 
-  Settings,
-  LogOut 
+  Settings 
 } from 'lucide-react';
 
 type SidebarLink = {
@@ -47,20 +46,15 @@ const sidebarLinks: SidebarLink[] = [
 
 const Sidebar: React.FC = () => {
   const currentPath = window.location.pathname;
-  
-  const handleLogout = () => {
-    console.log("Logging out...");
-    // Add actual logout logic here
-  };
 
   return (
-    <aside className="h-screen w-64 bg-truckmaster-darker flex flex-col">
+    <aside className="h-screen w-64 bg-truckmaster-darker border-r border-white/5 flex flex-col">
       <div className="p-5">
         <h1 className="text-2xl font-bold text-white">TruckMaster</h1>
       </div>
       
       <nav className="mt-8 px-4 flex-1">
-        <ul className="space-y-3">
+        <ul className="space-y-2">
           {sidebarLinks.map((link) => {
             const isActive = currentPath === link.path;
             return (
@@ -68,13 +62,13 @@ const Sidebar: React.FC = () => {
                 <Link 
                   to={link.path}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3.5 rounded-md text-sm font-medium transition-all duration-200",
+                    "flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-colors",
                     isActive 
-                      ? "bg-truckmaster-purple text-white nav-item-active" 
-                      : "text-gray-400 hover:text-white nav-item-hover"
+                      ? "bg-truckmaster-purple text-white" 
+                      : "text-gray-400 hover:text-white hover:bg-white/10"
                   )}
                 >
-                  <link.icon className={cn("h-5 w-5 nav-icon", isActive ? "text-white" : "text-gray-400")} />
+                  <link.icon className="h-5 w-5" />
                   <span>{link.title}</span>
                 </Link>
               </li>
@@ -83,8 +77,8 @@ const Sidebar: React.FC = () => {
         </ul>
       </nav>
       
-      <div className="p-4 bg-truckmaster-darker mt-auto border-t border-gray-800/30">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="p-4 border-t border-white/5 mt-auto">
+        <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-truckmaster-gray-dark flex items-center justify-center text-white font-medium">
             TU
           </div>
@@ -93,14 +87,6 @@ const Sidebar: React.FC = () => {
             <span className="text-xs text-gray-400">test@example.com</span>
           </div>
         </div>
-        
-        <button 
-          onClick={handleLogout} 
-          className="flex items-center gap-2 text-gray-400 hover:text-white text-sm w-fit px-2 py-1.5 rounded-md hover:bg-white/10 transition-colors"
-        >
-          <LogOut size={16} />
-          <span>Logout</span>
-        </button>
       </div>
     </aside>
   );

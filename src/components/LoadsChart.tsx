@@ -65,12 +65,11 @@ const LoadsChart: React.FC<LoadsChartProps> = ({ data = [] }) => {
   const yAxisMax = Math.ceil(maxLoads * 1.2); // Add 20% headroom
 
   return (
-    <div className="h-80 border-none">
-      <ResponsiveContainer width="100%" height="100%" className="border-none">
+    <div className="h-80">
+      <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={displayData}
           margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-          className="border-none"
         >
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
           <XAxis 
