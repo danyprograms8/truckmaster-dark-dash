@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LoadStatus, statusOptions, getStatusColor, updateLoadStatus, formatStatusLabel } from "@/lib/loadStatusUtils";
+import { LoadStatus, statusOptions, getStatusColor, updateLoadStatus, formatStatusLabel, normalizeStatus } from "@/lib/loadStatusUtils";
 import { useToast } from "@/hooks/use-toast";
 
 interface StatusDropdownProps {
@@ -20,7 +20,7 @@ interface StatusDropdownProps {
 
 const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, onStatusChange }) => {
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState<LoadStatus>(currentStatus.toLowerCase() as LoadStatus);
+  const [status, setStatus] = useState<LoadStatus>(normalizeStatus(currentStatus) as LoadStatus);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [optimisticStatus, setOptimisticStatus] = useState<LoadStatus | null>(null);
@@ -28,19 +28,22 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
 
   // Sync local state when currentStatus prop changes
   useEffect(() => {
-    // Normalize to lowercase for consistent comparison
-    setStatus(currentStatus.toLowerCase() as LoadStatus);
+    // Use normalizeStatus to ensure consistent format
+    setStatus(normalizeStatus(currentStatus) as LoadStatus);
   }, [currentStatus]);
 
   const handleStatusChange = async (newStatus: LoadStatus) => {
     // Normalize both statuses for comparison
-    const normalizedNewStatus = newStatus.toLowerCase() as LoadStatus;
-    const normalizedCurrentStatus = status.toLowerCase() as LoadStatus;
+    const normalizedNewStatus = normalizeStatus(newStatus) as LoadStatus;
+    const normalizedCurrentStatus = normalizeStatus(status) as LoadStatus;
     
     if (normalizedNewStatus === normalizedCurrentStatus) {
       setOpen(false);
       return;
     }
+    
+    // Debug log
+    console.log(`Changing status from ${normalizedCurrentStatus} to ${normalizedNewStatus} for load ${loadId}`);
     
     // Set optimistic UI update
     const previousStatus = status;
@@ -127,12 +130,12 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
               key={option.value}
               className={cn(
                 "flex justify-between",
-                displayStatus.toLowerCase() === option.value.toLowerCase() && "bg-gray-800"
+                normalizeStatus(displayStatus) === normalizeStatus(option.value) && "bg-gray-800"
               )}
               onClick={() => handleStatusChange(option.value)}
             >
               <span>{option.label}</span>
-              {displayStatus.toLowerCase() === option.value.toLowerCase() && <Check className="h-4 w-4" />}
+              {normalizeStatus(displayStatus) === normalizeStatus(option.value) && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

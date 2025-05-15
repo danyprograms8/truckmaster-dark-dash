@@ -1,4 +1,3 @@
-
 import { supabase } from './supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
@@ -19,8 +18,9 @@ export const getStatusColor = (status: string): string => {
   
   switch (normalizedStatus) {
     case 'active':
-    case 'in_transit':
       return 'bg-green-900 text-green-300';
+    case 'in_transit':
+      return 'bg-blue-500 text-white';
     case 'booked':
       return 'bg-blue-900 text-blue-300';
     case 'delivered':
@@ -35,9 +35,32 @@ export const getStatusColor = (status: string): string => {
 };
 
 // This helper function returns true if a status is considered "active"
+// IMPORTANT: We've changed this to ONLY include loads with exactly 'active' status
+// and NOT include 'in_transit' loads as active
 export const isActiveStatus = (status: string): boolean => {
   const normalizedStatus = status?.toLowerCase();
-  return normalizedStatus === 'active' || normalizedStatus === 'in_transit';
+  return normalizedStatus === 'active';
+};
+
+// This helper function returns true if a status is "in_transit"
+export const isInTransitStatus = (status: string): boolean => {
+  const normalizedStatus = status?.toLowerCase();
+  return normalizedStatus === 'in_transit';
+};
+
+// Normalize any status string to our standard format
+export const normalizeStatus = (status: string): string => {
+  if (!status) return '';
+  
+  const lowercaseStatus = status.toLowerCase();
+  
+  // Handle special cases
+  if (lowercaseStatus === 'in_transit' || lowercaseStatus === 'in transit') {
+    return 'in_transit';
+  }
+  
+  // Remove any spaces and return the lowercase version
+  return lowercaseStatus.replace(/\s+/g, '');
 };
 
 // Format status for display (proper capitalization and spacing)

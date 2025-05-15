@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Search, Filter, FileText, RefreshCw } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import StatusDropdown from './StatusDropdown';
-import { LoadStatus, statusOptions, getStatusColor, isActiveStatus, formatStatusLabel } from '@/lib/loadStatusUtils';
+import { LoadStatus, statusOptions, getStatusColor, isActiveStatus, isInTransitStatus, formatStatusLabel } from '@/lib/loadStatusUtils';
 import LoadDetailsDrawer from './LoadDetailsDrawer';
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -26,6 +26,14 @@ const LoadsTable: React.FC = () => {
   // Initialize localLoads with loads from DataProvider
   useEffect(() => {
     setLocalLoads(loads);
+    
+    // Debug logging to check status distributions
+    const statusCounts: Record<string, number> = {};
+    loads.forEach(load => {
+      const status = load.status.toLowerCase();
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
+    });
+    console.log('Current load status distribution:', statusCounts);
   }, [loads]);
   
   // Handle status change in a load - optimistic update
@@ -61,15 +69,23 @@ const LoadsTable: React.FC = () => {
   // Filter loads based on status and search term
   const filteredLoads = useMemo(() => {
     return localLoads.filter(load => {
-      // Normalize all statuses for consistent comparison
+      // Normalize status for consistent comparison 
       const normalizedLoadStatus = load.status.toLowerCase();
       
-      // Special handling for "active" filter to include both "active" and "in_transit"
+      // Special handling for "active" filter to include ONLY "active" status (not "in_transit")
       if (statusFilter === 'active') {
         if (!isActiveStatus(normalizedLoadStatus)) {
           return false;
         }
-      } else if (statusFilter !== 'all' && normalizedLoadStatus !== statusFilter.toLowerCase()) {
+      }
+      // Special handling for "in_transit" filter
+      else if (statusFilter === 'in_transit') {
+        if (!isInTransitStatus(normalizedLoadStatus)) {
+          return false;
+        }
+      }
+      // All other filters use exact matching
+      else if (statusFilter !== 'all' && normalizedLoadStatus !== statusFilter.toLowerCase()) {
         return false;
       }
       
@@ -84,6 +100,8 @@ const LoadsTable: React.FC = () => {
 
   // Calculate counts of loads by status - will update automatically with localLoads
   const loadCounts = useMemo(() => {
+    console.log("Recalculating load counts from", localLoads.length, "loads");
+    
     // Initialize counts object with zero counts
     const counts: Record<string, number> = {
       all: localLoads.length,
@@ -94,22 +112,47 @@ const LoadsTable: React.FC = () => {
       counts[option.value] = 0;
     });
     
+    // Debug tracking
+    const statusTracker: Record<string, string[]> = {};
+    
     // Count loads for each status
     localLoads.forEach(load => {
       const normalizedStatus = load.status.toLowerCase();
       
-      // For "active" status, count both "active" and "in_transit"
+      // Track which loads are counted where (for debugging)
+      if (!statusTracker[normalizedStatus]) {
+        statusTracker[normalizedStatus] = [];
+      }
+      statusTracker[normalizedStatus].push(load.load_id);
+      
+      // For "active" status, count ONLY "active" (not "in_transit")
       if (isActiveStatus(normalizedStatus)) {
         counts['active'] = (counts['active'] || 0) + 1;
       }
       
+      // Count for "in_transit" status specifically
+      if (isInTransitStatus(normalizedStatus)) {
+        counts['in_transit'] = (counts['in_transit'] || 0) + 1;
+      }
+      
       // Count for each specific status
       statusOptions.forEach(option => {
+        // Only increment if it's an exact match with this option
         if (normalizedStatus === option.value.toLowerCase()) {
           counts[option.value] = (counts[option.value] || 0) + 1;
         }
       });
     });
+    
+    // Debug log
+    console.log("Status counts:", counts);
+    console.log("Status breakdown:", statusTracker);
+    
+    // Data integrity check - sum of all specific statuses should equal total
+    const specificStatusSum = statusOptions.reduce((sum, option) => sum + (counts[option.value] || 0), 0);
+    if (specificStatusSum !== counts.all) {
+      console.warn(`Status count mismatch: Total=${counts.all}, Sum of categories=${specificStatusSum}`);
+    }
     
     return counts;
   }, [localLoads]);
