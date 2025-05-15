@@ -20,7 +20,7 @@ interface StatusDropdownProps {
 
 const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, onStatusChange }) => {
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState<LoadStatus>(currentStatus as LoadStatus);
+  const [status, setStatus] = useState<LoadStatus>(currentStatus.toLowerCase() as LoadStatus);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [optimisticStatus, setOptimisticStatus] = useState<LoadStatus | null>(null);
@@ -28,31 +28,36 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
 
   // Sync local state when currentStatus prop changes
   useEffect(() => {
-    setStatus(currentStatus as LoadStatus);
+    // Normalize to lowercase for consistent comparison
+    setStatus(currentStatus.toLowerCase() as LoadStatus);
   }, [currentStatus]);
 
   const handleStatusChange = async (newStatus: LoadStatus) => {
-    if (newStatus === status) {
+    // Normalize both statuses for comparison
+    const normalizedNewStatus = newStatus.toLowerCase() as LoadStatus;
+    const normalizedCurrentStatus = status.toLowerCase() as LoadStatus;
+    
+    if (normalizedNewStatus === normalizedCurrentStatus) {
       setOpen(false);
       return;
     }
     
     // Set optimistic UI update
     const previousStatus = status;
-    setOptimisticStatus(newStatus);
+    setOptimisticStatus(normalizedNewStatus);
     setIsUpdating(true);
     
     // Call parent callback immediately for optimistic update
     if (onStatusChange) {
-      onStatusChange(newStatus);
+      onStatusChange(normalizedNewStatus);
     }
     
     try {
-      const success = await updateLoadStatus(loadId, newStatus);
+      const success = await updateLoadStatus(loadId, normalizedNewStatus);
       
       if (success) {
         // Update local state
-        setStatus(newStatus);
+        setStatus(normalizedNewStatus);
         
         // Show success indicator briefly
         setShowSuccess(true);
@@ -122,12 +127,12 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
               key={option.value}
               className={cn(
                 "flex justify-between",
-                displayStatus === option.value && "bg-gray-800"
+                displayStatus.toLowerCase() === option.value.toLowerCase() && "bg-gray-800"
               )}
               onClick={() => handleStatusChange(option.value)}
             >
               <span>{option.label}</span>
-              {displayStatus === option.value && <Check className="h-4 w-4" />}
+              {displayStatus.toLowerCase() === option.value.toLowerCase() && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

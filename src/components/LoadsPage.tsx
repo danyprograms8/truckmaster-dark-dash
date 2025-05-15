@@ -4,12 +4,13 @@ import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Filter, FileText } from 'lucide-react';
+import { Plus, Search, Filter, FileText, RefreshCw } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import StatusDropdown from './StatusDropdown';
 import { LoadStatus, statusOptions, getStatusColor, isActiveStatus, formatStatusLabel } from '@/lib/loadStatusUtils';
 import LoadDetailsDrawer from './LoadDetailsDrawer';
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const LoadsTable: React.FC = () => {
   const { loads, isLoading, refreshData } = useData();
@@ -60,12 +61,15 @@ const LoadsTable: React.FC = () => {
   // Filter loads based on status and search term
   const filteredLoads = useMemo(() => {
     return localLoads.filter(load => {
+      // Normalize all statuses for consistent comparison
+      const normalizedLoadStatus = load.status.toLowerCase();
+      
       // Special handling for "active" filter to include both "active" and "in_transit"
       if (statusFilter === 'active') {
-        if (!isActiveStatus(load.status)) {
+        if (!isActiveStatus(normalizedLoadStatus)) {
           return false;
         }
-      } else if (statusFilter !== 'all' && load.status !== statusFilter) {
+      } else if (statusFilter !== 'all' && normalizedLoadStatus !== statusFilter.toLowerCase()) {
         return false;
       }
       
@@ -80,18 +84,31 @@ const LoadsTable: React.FC = () => {
 
   // Calculate counts of loads by status - will update automatically with localLoads
   const loadCounts = useMemo(() => {
-    const counts = {
+    // Initialize counts object with zero counts
+    const counts: Record<string, number> = {
       all: localLoads.length,
-    } as Record<string, number>;
+    };
     
-    // Calculate counts for each status option
+    // Set all status options to 0 initially
     statusOptions.forEach(option => {
+      counts[option.value] = 0;
+    });
+    
+    // Count loads for each status
+    localLoads.forEach(load => {
+      const normalizedStatus = load.status.toLowerCase();
+      
       // For "active" status, count both "active" and "in_transit"
-      if (option.value === 'active') {
-        counts[option.value] = localLoads.filter(load => isActiveStatus(load.status)).length;
-      } else {
-        counts[option.value] = localLoads.filter(load => load.status === option.value).length;
+      if (isActiveStatus(normalizedStatus)) {
+        counts['active'] = (counts['active'] || 0) + 1;
       }
+      
+      // Count for each specific status
+      statusOptions.forEach(option => {
+        if (normalizedStatus === option.value.toLowerCase()) {
+          counts[option.value] = (counts[option.value] || 0) + 1;
+        }
+      });
     });
     
     return counts;
@@ -182,29 +199,23 @@ const LoadsTable: React.FC = () => {
           </Button>
         ))}
         
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleForceRefresh}
-          className="ml-2 p-1.5 h-8 w-8"
-          title="Refresh counts"
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="16" 
-            height="16" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-            className="transition-transform hover:rotate-180 duration-500"
-          >
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-            <path d="M3 3v5h5" />
-          </svg>
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleForceRefresh}
+                className="ml-2 p-1.5 h-8 w-8"
+              >
+                <RefreshCw className="h-4 w-4 transition-transform hover:rotate-180 duration-500" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Refresh counts</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       
       <Card>

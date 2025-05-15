@@ -14,7 +14,10 @@ export const statusOptions: { value: LoadStatus, label: string }[] = [
 ];
 
 export const getStatusColor = (status: string): string => {
-  switch (status?.toLowerCase()) {
+  // Normalize status to lowercase for comparison
+  const normalizedStatus = status?.toLowerCase();
+  
+  switch (normalizedStatus) {
     case 'active':
     case 'in_transit':
       return 'bg-green-900 text-green-300';
@@ -33,18 +36,21 @@ export const getStatusColor = (status: string): string => {
 
 // This helper function returns true if a status is considered "active"
 export const isActiveStatus = (status: string): boolean => {
-  return status?.toLowerCase() === 'active' || status?.toLowerCase() === 'in_transit';
+  const normalizedStatus = status?.toLowerCase();
+  return normalizedStatus === 'active' || normalizedStatus === 'in_transit';
 };
 
 // Format status for display (proper capitalization and spacing)
 export const formatStatusLabel = (status: string): string => {
   if (!status) return '';
   
-  if (status.toLowerCase() === 'in_transit') {
+  const normalizedStatus = status.toLowerCase();
+  
+  if (normalizedStatus === 'in_transit') {
     return 'In Transit';
   }
   
-  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  return normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1).toLowerCase();
 };
 
 export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): Promise<boolean> => {
