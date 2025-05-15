@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -381,18 +382,18 @@ const LoadsPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-20">Load ID</TableHead>
-                  <TableHead className="max-w-[120px]">Broker</TableHead>
-                  <TableHead className="w-24">Broker #</TableHead>
-                  <TableHead className="w-20">Type</TableHead>
-                  <TableHead className="w-32">Pickup</TableHead>
-                  <TableHead className="w-24">PU Date</TableHead>
-                  <TableHead className="w-32">Delivery</TableHead>
-                  <TableHead className="w-24">DEL Date</TableHead>
-                  <TableHead className="w-28">Status</TableHead>
-                  <TableHead className="w-20">Rate</TableHead>
-                  <TableHead className="w-28">Driver</TableHead>
-                  <TableHead className="w-16">Actions</TableHead>
+                  {/* Load ID column removed */}
+                  <TableHead className="w-[130px]">Broker</TableHead>
+                  <TableHead className="w-[80px]">Broker #</TableHead>
+                  <TableHead className="w-[80px]">Type</TableHead>
+                  <TableHead className="w-[130px]">Pickup</TableHead>
+                  <TableHead className="w-[80px]">PU Date</TableHead>
+                  <TableHead className="w-[130px]">Delivery</TableHead>
+                  <TableHead className="w-[80px]">DEL Date</TableHead>
+                  <TableHead className="w-[100px]">Status</TableHead>
+                  <TableHead className="w-[70px]">Rate</TableHead>
+                  <TableHead className="w-[110px]">Driver</TableHead>
+                  <TableHead className="w-[60px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -400,20 +401,21 @@ const LoadsPage: React.FC = () => {
                   filteredLoads.map((load) => (
                     <TableRow 
                       key={load.id} 
-                      className={getRowClassName(load.load_id)}
+                      className={`${getRowClassName(load.load_id)} hover:bg-accent/50`}
                     >
-                      <TableCell className="whitespace-nowrap">{load.load_id}</TableCell>
+                      {/* Load ID cell removed */}
                       <TableCell>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <div className="truncate max-w-[120px]">
+                              <div className="truncate max-w-[130px]">
                                 {load.broker_name || 'N/A'}
                               </div>
                             </TooltipTrigger>
                             {load.broker_name && (
                               <TooltipContent>
                                 <p>{load.broker_name}</p>
+                                {load.load_id && <p className="text-xs text-muted-foreground">Load ID: {load.load_id}</p>}
                               </TooltipContent>
                             )}
                           </Tooltip>
@@ -425,7 +427,7 @@ const LoadsPage: React.FC = () => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="truncate block max-w-[140px]">
+                              <span className="truncate block max-w-[130px]">
                                 {formatLocation(load.pickup_city, load.pickup_state)}
                               </span>
                             </TooltipTrigger>
@@ -458,7 +460,7 @@ const LoadsPage: React.FC = () => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="truncate block max-w-[140px]">
+                              <span className="truncate block max-w-[130px]">
                                 {formatLocation(load.delivery_city, load.delivery_state)}
                               </span>
                             </TooltipTrigger>
@@ -499,7 +501,7 @@ const LoadsPage: React.FC = () => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="truncate block max-w-[100px]">
+                              <span className="truncate block max-w-[110px]">
                                 {load.driver_id || 'Unassigned'}
                               </span>
                             </TooltipTrigger>
@@ -523,7 +525,7 @@ const LoadsPage: React.FC = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={12} className="py-6 text-center text-gray-400">
+                    <TableCell colSpan={11} className="py-6 text-center text-gray-400">
                       {searchTerm 
                         ? 'No loads found matching your search criteria' 
                         : selectedMonth 
