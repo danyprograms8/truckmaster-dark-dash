@@ -6,7 +6,7 @@ import { formatActivity, formatTimeAgo } from '@/lib/loadStatusUtils';
 
 interface Activity {
   activity_id: number;
-  activity_type: string; // Changed from '"status_change" | "note"' to 'string'
+  activity_type: string;
   load_id: string;
   previous_status?: string;
   new_status?: string;
@@ -84,24 +84,20 @@ const RecentActivity: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-truckmaster-card-bg p-5 rounded-lg border border-white/5 h-full">
-        <h2 className="text-white font-medium mb-4">Recent Activity</h2>
-        <div className="flex justify-center py-8">
-          <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full"></div>
-        </div>
+      <div className="h-full flex justify-center items-center">
+        <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-truckmaster-card-bg p-5 rounded-lg border border-white/5 h-full">
-      <h2 className="text-white font-medium mb-4">Recent Activity</h2>
+    <div className="h-full">
       <div className="space-y-4">
         {recentActivity.length > 0 ? (
           recentActivity.map((activity) => (
             <div 
               key={`${activity.note_id || activity.activity_id || ''}-${activity.created_at}`} 
-              className="flex items-start pb-4 border-b border-white/5 last:border-0 last:pb-0"
+              className="flex items-start pb-4 last:border-0 last:pb-0"
             >
               <div className="h-2 w-2 mt-2 rounded-full bg-truckmaster-purple mr-3 flex-shrink-0" />
               <div>
