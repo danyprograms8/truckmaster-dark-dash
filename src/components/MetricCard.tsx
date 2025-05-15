@@ -12,7 +12,7 @@ interface MetricCardProps {
   };
   className?: string;
   color?: string;
-  suffix?: React.ReactNode; // Added suffix prop
+  suffix?: React.ReactNode; // We'll keep this prop but not use it for the Available Trucks card
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({ 
@@ -22,7 +22,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   trend, 
   className,
   color,
-  suffix // Added suffix prop
+  suffix // Keep this in the props
 }) => {
   return (
     <div className={cn(
@@ -43,15 +43,13 @@ const MetricCard: React.FC<MetricCardProps> = ({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1">
-          <div className={cn(
-            "h-10 w-10 rounded-md flex items-center justify-center",
-            color ? color : "bg-truckmaster-purple/20 text-truckmaster-purple"
-          )}>
-            {icon}
-          </div>
-          {suffix}
+        <div className={cn(
+          "h-10 w-10 rounded-md flex items-center justify-center",
+          color ? color : "bg-truckmaster-purple/20 text-truckmaster-purple"
+        )}>
+          {icon}
         </div>
+        {suffix}
       </div>
     </div>
   );

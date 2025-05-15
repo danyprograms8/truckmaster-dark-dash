@@ -1,14 +1,13 @@
 
 import React, { useState } from 'react';
 import { useData } from './DataProvider';
-import { Truck, Users, Calendar, CheckCircle, ExternalLink } from 'lucide-react';
+import { Truck, Users, Calendar, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LoadsChart from '@/components/LoadsChart';
 import RecentActivity from '@/components/RecentActivity';
 import QuickActions from '@/components/QuickActions';
 import MetricCard from '@/components/MetricCard';
 import TruckList from '@/components/TruckList';
-import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Dashboard: React.FC = () => {
@@ -47,11 +46,6 @@ const Dashboard: React.FC = () => {
             icon={<Truck className="h-6 w-6" />} 
             color="bg-green-500" 
             className="cursor-pointer hover:ring-2 hover:ring-green-400 transition-all"
-            suffix={
-              <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-white/80 hover:text-white">
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-            }
           />
         </div>
         
