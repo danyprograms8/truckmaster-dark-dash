@@ -9,16 +9,14 @@ import QuickActions from '@/components/QuickActions';
 import MetricCard from '@/components/MetricCard';
 
 const Dashboard: React.FC = () => {
-  const { loads, drivers, isLoading } = useData();
+  const { loads, drivers, isLoading, dashboardMetrics } = useData();
   
   // Calculate metrics
-  const activeLoads = loads.filter(load => load.status === 'active' || load.status === 'in_transit').length;
-  const availableDrivers = drivers.filter(driver => driver.status === 'active').length;
+  const activeLoads = loads.filter(load => ['active', 'booked', 'assigned', 'in_transit'].includes(load.status.toLowerCase())).length;
+  const availableDrivers = drivers.filter(driver => driver.status?.toLowerCase() === 'active').length;
   
-  // Mock data for pickups and deliveries today
-  // In a real app, you'd calculate this from your delivery_locations and pickup_locations tables
-  const todayPickups = 5;
-  const todayDeliveries = 7;
+  // Get metrics from the dashboardMetrics object
+  const { todayPickups, todayDeliveries, loadTrend } = dashboardMetrics;
 
   if (isLoading) {
     return (
@@ -71,7 +69,7 @@ const Dashboard: React.FC = () => {
               <CardTitle>Loads Booked (Last 7 Days)</CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
-              <LoadsChart />
+              <LoadsChart data={loadTrend} />
             </CardContent>
           </Card>
         </div>

@@ -14,25 +14,26 @@ import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipCont
 
 interface ChartData {
   date: string;
-  loads: number;
+  count: number;
 }
 
-const data: ChartData[] = [
-  { date: 'May 8', loads: 8 },
-  { date: 'May 9', loads: 3 },
-  { date: 'May 10', loads: 3 },
-  { date: 'May 11', loads: 7 },
-  { date: 'May 12', loads: 7 },
-  { date: 'May 13', loads: 10 },
-  { date: 'May 14', loads: 4 },
-];
+interface LoadsChartProps {
+  data?: ChartData[];
+}
+
+// Format date string to a more readable format (e.g., "May 8")
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
 
 const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-truckmaster-darker p-2 px-3 border border-white/10 rounded-md shadow-md">
-        <p className="text-sm text-white font-medium">{label}</p>
-        <p className="text-truckmaster-purple font-bold">
+      <div className="bg-background p-2 px-3 border rounded-md shadow-md">
+        <p className="text-sm font-medium">{formatDate(label as string)}</p>
+        <p className="text-primary font-bold">
           {`${payload[0].value} Loads`}
         </p>
       </div>
@@ -41,27 +42,48 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameT
   return null;
 };
 
-const LoadsChart: React.FC = () => {
+const LoadsChart: React.FC<LoadsChartProps> = ({ data = [] }) => {
+  // Transform the data for display
+  const chartData = data.map(item => ({
+    date: item.date,
+    loads: item.count
+  }));
+  
+  // If no data is provided, use sample data
+  const displayData = chartData.length > 0 ? chartData : [
+    { date: '2025-05-08', loads: 8 },
+    { date: '2025-05-09', loads: 3 },
+    { date: '2025-05-10', loads: 3 },
+    { date: '2025-05-11', loads: 7 },
+    { date: '2025-05-12', loads: 7 },
+    { date: '2025-05-13', loads: 10 },
+    { date: '2025-05-14', loads: 4 },
+  ];
+
+  // Find max value to set y-axis domain
+  const maxLoads = Math.max(...displayData.map(d => d.loads), 10);
+  const yAxisMax = Math.ceil(maxLoads * 1.2); // Add 20% headroom
+
   return (
-    <div className="bg-truckmaster-card-bg p-5 rounded-lg border border-white/5 h-80">
-      <h2 className="text-white font-medium mb-4">Loads Booked (Last 7 Days)</h2>
-      <ResponsiveContainer width="100%" height="85%">
+    <div className="h-80">
+      <ResponsiveContainer width="100%" height="100%">
         <LineChart
-          data={data}
+          data={displayData}
           margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#333333" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
           <XAxis 
             dataKey="date" 
-            tick={{ fill: '#9F9EA1' }}
-            axisLine={{ stroke: '#333333' }}
+            tickFormatter={formatDate}
+            tick={{ fill: 'rgba(255,255,255,0.7)' }}
+            axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
             tickLine={false}
           />
           <YAxis 
-            tick={{ fill: '#9F9EA1' }}
+            tick={{ fill: 'rgba(255,255,255,0.7)' }}
             axisLine={false}
             tickLine={false}
-            domain={[0, 12]}
+            domain={[0, yAxisMax]}
             tickCount={7}
           />
           <Tooltip content={<CustomTooltip />} />
