@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,6 +107,7 @@ const LoadsPage: React.FC = () => {
   
   // Handle month/year selection
   const handleMonthYearChange = (date: Date | null) => {
+    console.log('Month/Year changed to:', date?.toISOString() || 'All Time');
     setSelectedMonth(date);
     
     // Display a toast notification about the filter change
@@ -130,25 +130,37 @@ const LoadsPage: React.FC = () => {
   const isLoadActiveInMonth = useCallback((load: any, date: Date) => {
     if (!load.created_at) return false;
     
-    const loadCreatedAt = typeof load.created_at === 'string' 
-      ? parseISO(load.created_at) 
-      : load.created_at;
-    
-    const monthStart = startOfMonth(date);
-    const monthEnd = endOfMonth(date);
-    
-    // Check if load was created in this month
-    if (isWithinInterval(loadCreatedAt, { start: monthStart, end: monthEnd })) {
-      return true;
+    try {
+      const loadCreatedAt = typeof load.created_at === 'string' 
+        ? parseISO(load.created_at) 
+        : load.created_at;
+      
+      const monthStart = startOfMonth(date);
+      const monthEnd = endOfMonth(date);
+      
+      console.log('Checking if load was active in month:', {
+        load_id: load.load_id,
+        loadCreatedAt,
+        monthStart,
+        monthEnd
+      });
+      
+      // Check if load was created in this month
+      if (isWithinInterval(loadCreatedAt, { start: monthStart, end: monthEnd })) {
+        return true;
+      }
+      
+      // TODO: In a real implementation, we would also check:
+      // - Pickup dates in this month
+      // - Delivery dates in this month  
+      // - Status changes during this month
+      // This would require additional data we don't have in the current model
+  
+      return false;
+    } catch (error) {
+      console.error('Error checking if load is active in month:', error);
+      return false;
     }
-    
-    // TODO: In a real implementation, we would also check:
-    // - Pickup dates in this month
-    // - Delivery dates in this month  
-    // - Status changes during this month
-    // This would require additional data we don't have in the current model
-
-    return false;
   }, []);
   
   // Filter loads based on status, search term, and selected month

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, addMonths, subMonths, setMonth, setYear } from 'date-fns';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ChevronsUp, ChevronsDown } from 'lucide-react';
@@ -26,6 +25,11 @@ const MonthYearSelector: React.FC<MonthYearSelectorProps> = ({
   const [isAllTime, setIsAllTime] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   
+  // Define year range constraints
+  const currentYear = new Date().getFullYear();
+  const minYear = currentYear - 5;  // 5 years back
+  const maxYear = currentYear + 5;  // 5 years forward
+  
   // Load saved preference from localStorage on initial render
   useEffect(() => {
     const savedDateStr = localStorage.getItem('preferredMonthYear');
@@ -33,6 +37,8 @@ const MonthYearSelector: React.FC<MonthYearSelectorProps> = ({
     
     if (savedDateStr && !savedAllTime) {
       setCurrentDate(new Date(savedDateStr));
+      const savedYear = new Date(savedDateStr).getFullYear();
+      setYearView(savedYear); // Make sure to initialize yearView with the saved year
       setIsAllTime(false);
     } else if (savedAllTime) {
       setIsAllTime(true);
@@ -67,7 +73,11 @@ const MonthYearSelector: React.FC<MonthYearSelectorProps> = ({
   };
   
   const handleSelectMonth = (monthIndex: number) => {
-    const newDate = setMonth(currentDate, monthIndex);
+    // Create a new date using the currently viewed year (yearView) and selected month
+    const newDate = new Date(yearView, monthIndex, 1);
+    
+    console.log(`Selected month ${monthIndex} and year ${yearView}, creating date:`, newDate);
+    
     setCurrentDate(newDate);
     setIsAllTime(false);
     setIsOpen(false);
@@ -76,9 +86,15 @@ const MonthYearSelector: React.FC<MonthYearSelectorProps> = ({
   };
   
   const handleSelectYear = (year: number) => {
+    console.log(`Setting year to: ${year}`);
     setYearView(year);
+    
+    // Also update the current date to use this year but keep the same month
+    const currentMonth = currentDate.getMonth();
     const newDate = setYear(currentDate, year);
     setCurrentDate(newDate);
+    
+    // Switch back to month view after selecting a year
     setCalendarView('month');
   };
   
@@ -92,6 +108,7 @@ const MonthYearSelector: React.FC<MonthYearSelectorProps> = ({
   const handleCurrentMonth = () => {
     const today = new Date();
     setCurrentDate(today);
+    setYearView(today.getFullYear());
     setIsAllTime(false);
     setIsOpen(false);
     savePreference(today, false);
@@ -99,11 +116,13 @@ const MonthYearSelector: React.FC<MonthYearSelectorProps> = ({
   };
   
   const handlePreviousYear = () => {
-    setYearView(prev => prev - 1);
+    const newYear = yearView - 1;
+    setYearView(newYear);
   };
   
   const handleNextYear = () => {
-    setYearView(prev => prev + 1);
+    const newYear = yearView + 1;
+    setYearView(newYear);
   };
   
   const months = [
@@ -166,22 +185,28 @@ const MonthYearSelector: React.FC<MonthYearSelectorProps> = ({
             </Button>
           )}
         </div>
+        <div className="mt-2 text-xs text-center text-muted-foreground">
+          Valid range: {minYear} - {maxYear}
+        </div>
       </div>
     );
   };
   
   const renderYearSelector = () => {
-    const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 7 }, (_, i) => currentYear - 3 + i);
+    // Calculate range of years to display, centered on the current yearView
+    const yearsToShow = 9; // Show 9 years (3x3 grid)
+    const halfRange = Math.floor(yearsToShow / 2);
+    const startYear = yearView - halfRange;
+    const years = Array.from({ length: yearsToShow }, (_, i) => startYear + i);
     
     return (
       <div className="p-2">
         <div className="flex justify-between items-center mb-4">
-          <Button variant="ghost" size="sm" onClick={() => setYearView(prev => prev - 7)}>
+          <Button variant="ghost" size="sm" onClick={() => setYearView(prev => prev - yearsToShow)}>
             <ChevronsUp className="h-4 w-4" />
           </Button>
           <span className="font-bold">Select Year</span>
-          <Button variant="ghost" size="sm" onClick={() => setYearView(prev => prev + 7)}>
+          <Button variant="ghost" size="sm" onClick={() => setYearView(prev => prev + yearsToShow)}>
             <ChevronsDown className="h-4 w-4" />
           </Button>
         </div>
@@ -190,12 +215,18 @@ const MonthYearSelector: React.FC<MonthYearSelectorProps> = ({
             <Button
               key={year}
               variant={year === yearView ? "default" : "ghost"}
-              className="w-full justify-center py-2"
+              className={cn(
+                "w-full justify-center py-2",
+                (year < minYear || year > maxYear) && "text-gray-500"
+              )}
               onClick={() => handleSelectYear(year)}
             >
               {year}
             </Button>
           ))}
+        </div>
+        <div className="mt-2 text-xs text-center text-muted-foreground">
+          Recommended range: {minYear} - {maxYear}
         </div>
       </div>
     );
