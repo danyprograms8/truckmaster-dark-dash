@@ -231,6 +231,7 @@ export type Database = {
           id: number
           load_id: string
           load_type: string | null
+          note_count: number | null
           rate: number | null
           status: string
           temperature: string | null
@@ -244,6 +245,7 @@ export type Database = {
           id?: number
           load_id: string
           load_type?: string | null
+          note_count?: number | null
           rate?: number | null
           status?: string
           temperature?: string | null
@@ -257,6 +259,7 @@ export type Database = {
           id?: number
           load_id?: string
           load_type?: string | null
+          note_count?: number | null
           rate?: number | null
           status?: string
           temperature?: string | null

@@ -46,3 +46,31 @@ export async function getLoadActivities() {
   if (error) throw error;
   return data;
 }
+
+// Function to get notes for a specific load
+export async function getLoadNotes(loadId: string) {
+  const { data, error } = await supabase
+    .from('load_notes')
+    .select('*')
+    .eq('load_id', loadId)
+    .order('created_at', { ascending: false });
+  
+  if (error) throw error;
+  return data || [];
+}
+
+// Function to add a new note to a load
+export async function addLoadNote(loadId: string, noteText: string, noteType: string = 'general') {
+  const { data, error } = await supabase
+    .from('load_notes')
+    .insert([
+      { 
+        load_id: loadId,
+        note_text: noteText,
+        note_type: noteType
+      }
+    ]);
+  
+  if (error) throw error;
+  return data;
+}

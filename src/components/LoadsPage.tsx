@@ -4,16 +4,20 @@ import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, FileText } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import StatusDropdown from './StatusDropdown';
 import { LoadStatus, statusOptions, getStatusColor, isActiveStatus, formatStatusLabel } from '@/lib/loadStatusUtils';
+import LoadDetailsDrawer from './LoadDetailsDrawer';
 
 const LoadsTable: React.FC = () => {
   const { loads, isLoading, refreshData } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<LoadStatus | 'all'>('all');
   const [localLoads, setLocalLoads] = useState(loads);
+  const [selectedLoad, setSelectedLoad] = useState<any>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [loadDetailLoading, setLoadDetailLoading] = useState(false);
   
   // Initialize localLoads with loads from DataProvider
   useEffect(() => {
@@ -28,6 +32,18 @@ const LoadsTable: React.FC = () => {
       )
     );
   }, []);
+
+  // Open load details drawer
+  const handleViewLoad = (load: any) => {
+    setSelectedLoad(load);
+    setLoadDetailLoading(true);
+    setIsDrawerOpen(true);
+    
+    // Simulate loading
+    setTimeout(() => {
+      setLoadDetailLoading(false);
+    }, 500);
+  };
   
   const filteredLoads = localLoads.filter(load => {
     // Special handling for "active" filter to include both "active" and "in_transit"
@@ -139,6 +155,7 @@ const LoadsTable: React.FC = () => {
                   <TableHead>Status</TableHead>
                   <TableHead>Rate</TableHead>
                   <TableHead>Driver</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -160,11 +177,21 @@ const LoadsTable: React.FC = () => {
                       <TableCell>
                         {load.driver_id || 'Unassigned'}
                       </TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleViewLoad(load)}
+                          title="View load details and notes"
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="py-6 text-center text-gray-400">
+                    <TableCell colSpan={8} className="py-6 text-center text-gray-400">
                       {searchTerm ? 'No loads found matching your search criteria' : 'No loads found'}
                     </TableCell>
                   </TableRow>
@@ -174,6 +201,13 @@ const LoadsTable: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      
+      <LoadDetailsDrawer 
+        open={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        selectedLoad={selectedLoad}
+        isLoading={loadDetailLoading}
+      />
     </div>
   );
 };
