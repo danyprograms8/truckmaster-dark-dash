@@ -138,8 +138,7 @@ const LoadNotes: React.FC<LoadNotesProps> = ({ loadId, brokerName }) => {
           </Button>
         </form>
       </CardContent>
-    </CardContent>
-  </Card>
+    </Card>
   );
 };
 
