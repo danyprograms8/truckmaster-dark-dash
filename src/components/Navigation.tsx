@@ -109,7 +109,7 @@ const Navigation: React.FC = () => {
             
             <Button 
               variant="ghost" 
-              className="flex items-center justify-start text-gray-300 hover:text-white hover:bg-gray-800 w-full"
+              className="flex items-center justify-start text-gray-300 hover:text-white hover:bg-gray-800 w-fit px-3 py-2" 
               onClick={handleLogout}
             >
               <LogOut size={18} className="mr-2" />

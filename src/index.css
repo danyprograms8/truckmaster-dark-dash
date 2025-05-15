@@ -62,7 +62,7 @@
   }
 
   .glass-card {
-    @apply bg-black/20 backdrop-blur-sm border border-white/5 shadow-lg;
+    @apply bg-black/20 backdrop-blur-sm border-none shadow-lg;
   }
   
   .card-hover {

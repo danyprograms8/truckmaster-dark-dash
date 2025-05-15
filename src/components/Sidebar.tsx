@@ -7,7 +7,8 @@ import {
   Truck, 
   Users, 
   Calendar, 
-  Settings 
+  Settings,
+  LogOut 
 } from 'lucide-react';
 
 type SidebarLink = {
@@ -46,9 +47,14 @@ const sidebarLinks: SidebarLink[] = [
 
 const Sidebar: React.FC = () => {
   const currentPath = window.location.pathname;
+  
+  const handleLogout = () => {
+    console.log("Logging out...");
+    // Add actual logout logic here
+  };
 
   return (
-    <aside className="h-screen w-64 bg-truckmaster-darker border-r border-white/5 flex flex-col">
+    <aside className="h-screen w-64 bg-truckmaster-darker flex flex-col">
       <div className="p-5">
         <h1 className="text-2xl font-bold text-white">TruckMaster</h1>
       </div>
@@ -77,8 +83,8 @@ const Sidebar: React.FC = () => {
         </ul>
       </nav>
       
-      <div className="p-4 border-t border-white/5 mt-auto">
-        <div className="flex items-center gap-3">
+      <div className="p-4 bg-truckmaster-darker mt-auto">
+        <div className="flex items-center gap-3 mb-4">
           <div className="h-8 w-8 rounded-full bg-truckmaster-gray-dark flex items-center justify-center text-white font-medium">
             TU
           </div>
@@ -87,6 +93,14 @@ const Sidebar: React.FC = () => {
             <span className="text-xs text-gray-400">test@example.com</span>
           </div>
         </div>
+        
+        <button 
+          onClick={handleLogout} 
+          className="flex items-center gap-2 text-gray-400 hover:text-white text-sm w-fit px-2 py-1.5 rounded-md hover:bg-white/10 transition-colors"
+        >
+          <LogOut size={16} />
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
   );
