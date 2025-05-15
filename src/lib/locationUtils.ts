@@ -7,9 +7,10 @@
  * Format city and state into a single location string
  * @param city The city name
  * @param state The state code
+ * @param abbreviate Whether to abbreviate the location for table display
  * @returns Formatted location string (e.g., "Chicago, IL")
  */
-export const formatLocation = (city?: string, state?: string): string => {
+export const formatLocation = (city?: string, state?: string, abbreviate: boolean = true): string => {
   if (!city && !state) return "Not specified";
   if (!city) return `Not specified, ${state}`;
   if (!state) return `${city}, Not specified`;
@@ -20,7 +21,29 @@ export const formatLocation = (city?: string, state?: string): string => {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
     
+  // If abbreviation is needed, limit the city name length
+  if (abbreviate && formattedCity.length > 10) {
+    return `${formattedCity.substring(0, 10)}..., ${state.toUpperCase()}`;
+  }
+  
   return `${formattedCity}, ${state.toUpperCase()}`;
+};
+
+/**
+ * Format date to MM/DD/YY format (2-digit year)
+ * @param dateStr Date string
+ * @returns Formatted date string or "TBD" if date is not available
+ */
+export const formatDateMMDDYY = (dateStr?: string | Date | null): string => {
+  if (!dateStr) return "TBD";
+  
+  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
+  
+  return date.toLocaleDateString('en-US', { 
+    month: '2-digit',
+    day: '2-digit',
+    year: '2-digit'  // Use 2-digit year format (YY)
+  });
 };
 
 /**

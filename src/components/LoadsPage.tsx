@@ -21,7 +21,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import MonthYearSelector from './MonthYearSelector';
 import { isWithinInterval, startOfMonth, endOfMonth, parseISO } from 'date-fns';
-import { formatLocation, formatDateMMDDYYYY, formatTime } from '@/lib/locationUtils';
+import { formatLocation, formatDateMMDDYY, formatTime } from '@/lib/locationUtils';
 
 const LoadsPage: React.FC = () => {
   const { loads, isLoading, refreshData } = useData();
@@ -381,18 +381,18 @@ const LoadsPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Load ID</TableHead>
-                  <TableHead>Broker</TableHead>
-                  <TableHead>Broker Load #</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Pickup Location</TableHead>
-                  <TableHead>Pickup Date</TableHead>
-                  <TableHead>Delivery Location</TableHead>
-                  <TableHead>Delivery Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Rate</TableHead>
-                  <TableHead>Driver</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="w-20">Load ID</TableHead>
+                  <TableHead className="max-w-[120px]">Broker</TableHead>
+                  <TableHead className="w-24">Broker #</TableHead>
+                  <TableHead className="w-20">Type</TableHead>
+                  <TableHead className="w-32">Pickup</TableHead>
+                  <TableHead className="w-24">PU Date</TableHead>
+                  <TableHead className="w-32">Delivery</TableHead>
+                  <TableHead className="w-24">DEL Date</TableHead>
+                  <TableHead className="w-28">Status</TableHead>
+                  <TableHead className="w-20">Rate</TableHead>
+                  <TableHead className="w-28">Driver</TableHead>
+                  <TableHead className="w-16">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -402,19 +402,46 @@ const LoadsPage: React.FC = () => {
                       key={load.id} 
                       className={getRowClassName(load.load_id)}
                     >
-                      <TableCell>{load.load_id}</TableCell>
-                      <TableCell>{load.broker_name || 'N/A'}</TableCell>
-                      <TableCell>{load.broker_load_number || 'N/A'}</TableCell>
+                      <TableCell className="whitespace-nowrap">{load.load_id}</TableCell>
+                      <TableCell>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="truncate max-w-[120px]">
+                                {load.broker_name || 'N/A'}
+                              </div>
+                            </TooltipTrigger>
+                            {load.broker_name && (
+                              <TooltipContent>
+                                <p>{load.broker_name}</p>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TooltipProvider>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">{load.broker_load_number || 'N/A'}</TableCell>
                       <TableCell>{load.load_type || 'N/A'}</TableCell>
                       <TableCell className={!load.pickup_city && !load.pickup_state ? 'text-gray-500' : ''}>
-                        {formatLocation(load.pickup_city, load.pickup_state)}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="truncate block max-w-[140px]">
+                                {formatLocation(load.pickup_city, load.pickup_state)}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{formatLocation(load.pickup_city, load.pickup_state, false)}</p>
+                              {load.pickup_zip && <p>Zip: {load.pickup_zip}</p>}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </TableCell>
-                      <TableCell className={!load.pickup_date ? 'text-gray-500' : ''}>
+                      <TableCell className={!load.pickup_date ? 'text-gray-500' : 'whitespace-nowrap'}>
                         {load.pickup_date ? (
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger className="cursor-default">
-                                {formatDateMMDDYYYY(load.pickup_date)}
+                                {formatDateMMDDYY(load.pickup_date)}
                               </TooltipTrigger>
                               {load.pickup_time && (
                                 <TooltipContent>
@@ -428,14 +455,26 @@ const LoadsPage: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell className={!load.delivery_city && !load.delivery_state ? 'text-gray-500' : ''}>
-                        {formatLocation(load.delivery_city, load.delivery_state)}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="truncate block max-w-[140px]">
+                                {formatLocation(load.delivery_city, load.delivery_state)}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{formatLocation(load.delivery_city, load.delivery_state, false)}</p>
+                              {load.delivery_zip && <p>Zip: {load.delivery_zip}</p>}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </TableCell>
-                      <TableCell className={!load.delivery_date ? 'text-gray-500' : ''}>
+                      <TableCell className={!load.delivery_date ? 'text-gray-500' : 'whitespace-nowrap'}>
                         {load.delivery_date ? (
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger className="cursor-default">
-                                {formatDateMMDDYYYY(load.delivery_date)}
+                                {formatDateMMDDYY(load.delivery_date)}
                               </TooltipTrigger>
                               {load.delivery_time && (
                                 <TooltipContent>
@@ -457,7 +496,18 @@ const LoadsPage: React.FC = () => {
                       </TableCell>
                       <TableCell>${load.rate?.toFixed(2) || 'N/A'}</TableCell>
                       <TableCell>
-                        {load.driver_id || 'Unassigned'}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="truncate block max-w-[100px]">
+                                {load.driver_id || 'Unassigned'}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{load.driver_id || 'Unassigned'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </TableCell>
                       <TableCell>
                         <Button 
