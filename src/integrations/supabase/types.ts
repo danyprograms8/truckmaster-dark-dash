@@ -121,6 +121,58 @@ export type Database = {
         }
         Relationships: []
       }
+      load_activities: {
+        Row: {
+          activity_type: string
+          changed_by: string | null
+          created_at: string
+          id: number
+          load_id: string
+          new_status: string
+          previous_status: string
+        }
+        Insert: {
+          activity_type?: string
+          changed_by?: string | null
+          created_at?: string
+          id?: number
+          load_id: string
+          new_status: string
+          previous_status: string
+        }
+        Update: {
+          activity_type?: string
+          changed_by?: string | null
+          created_at?: string
+          id?: number
+          load_id?: string
+          new_status?: string
+          previous_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "load_activities_load_id_fkey"
+            columns: ["load_id"]
+            isOneToOne: false
+            referencedRelation: "load_summary"
+            referencedColumns: ["load_id"]
+          },
+          {
+            foreignKeyName: "load_activities_load_id_fkey"
+            columns: ["load_id"]
+            isOneToOne: false
+            referencedRelation: "loads"
+            referencedColumns: ["load_id"]
+          },
+          {
+            foreignKeyName: "load_activities_load_id_fkey"
+            columns: ["load_id"]
+            isOneToOne: false
+            referencedRelation: "truck_availability"
+            referencedColumns: ["current_load_id"]
+          },
+        ]
+      }
       load_notes: {
         Row: {
           created_at: string | null
@@ -290,6 +342,22 @@ export type Database = {
       }
     }
     Views: {
+      combined_activity_view: {
+        Row: {
+          activity_id: number | null
+          activity_type: string | null
+          broker_load_number: string | null
+          broker_name: string | null
+          changed_by: string | null
+          created_at: string | null
+          load_id: string | null
+          load_type: string | null
+          new_status: string | null
+          note_text: string | null
+          previous_status: string | null
+        }
+        Relationships: []
+      }
       load_notes_view: {
         Row: {
           broker_load_number: string | null

@@ -1,21 +1,34 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import StatusDropdown from './StatusDropdown';
+import { LoadStatus, statusOptions, getStatusColor } from '@/lib/loadStatusUtils';
 
 const LoadsTable: React.FC = () => {
-  const { loads, isLoading } = useData();
+  const { loads, isLoading, refreshData } = useData();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<LoadStatus | 'all'>('all');
   
   const filteredLoads = loads.filter(load => 
-    load.load_id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    load.broker_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    load.broker_load_number?.toLowerCase().includes(searchTerm.toLowerCase())
+    (statusFilter === 'all' || load.status === statusFilter) && 
+    (load.load_id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     load.broker_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     load.broker_load_number?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  // Maintain counts of loads by status
+  const loadCounts = {
+    all: loads.length,
+    ...statusOptions.reduce((acc, option) => {
+      acc[option.value] = loads.filter(load => load.status === option.value).length;
+      return acc;
+    }, {} as Record<string, number>)
+  };
 
   if (isLoading) {
     return (
@@ -48,9 +61,40 @@ const LoadsTable: React.FC = () => {
         </div>
       </div>
       
+      <div className="mb-6 flex flex-wrap gap-2">
+        <Button 
+          variant={statusFilter === 'all' ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStatusFilter('all')}
+          className="flex items-center"
+        >
+          <Filter className="mr-1 h-4 w-4" />
+          All <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">{loadCounts.all}</span>
+        </Button>
+        
+        {statusOptions.map(status => (
+          <Button 
+            key={status.value}
+            variant={statusFilter === status.value ? "default" : "outline"}
+            size="sm"
+            onClick={() => setStatusFilter(status.value)}
+            className={`${statusFilter === status.value ? '' : 'bg-opacity-20'}`}
+          >
+            {status.label} 
+            <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
+              {loadCounts[status.value] || 0}
+            </span>
+          </Button>
+        ))}
+      </div>
+      
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle>All Loads</CardTitle>
+          <CardTitle>
+            {statusFilter === 'all' 
+              ? 'All Loads' 
+              : `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Loads`}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -75,15 +119,10 @@ const LoadsTable: React.FC = () => {
                       <TableCell>{load.broker_load_number || 'N/A'}</TableCell>
                       <TableCell>{load.load_type || 'N/A'}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          load.status === 'active' ? 'bg-green-900 text-green-300' :
-                          load.status === 'in_transit' ? 'bg-blue-900 text-blue-300' :
-                          load.status === 'completed' ? 'bg-gray-700 text-gray-300' :
-                          load.status === 'cancelled' ? 'bg-red-900 text-red-300' :
-                          'bg-gray-800 text-gray-400'
-                        }`}>
-                          {load.status || 'Unknown'}
-                        </span>
+                        <StatusDropdown 
+                          loadId={load.load_id} 
+                          currentStatus={load.status} 
+                        />
                       </TableCell>
                       <TableCell>${load.rate?.toFixed(2) || 'N/A'}</TableCell>
                       <TableCell>
@@ -94,7 +133,7 @@ const LoadsTable: React.FC = () => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={7} className="py-6 text-center text-gray-400">
-                      No loads found matching your search criteria
+                      {searchTerm ? 'No loads found matching your search criteria' : 'No loads found'}
                     </TableCell>
                   </TableRow>
                 )}

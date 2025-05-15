@@ -1,57 +1,124 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
+import { useData } from './DataProvider';
+import { formatActivity, formatTimeAgo } from '@/lib/loadStatusUtils';
 
-interface ActivityItem {
-  id: string;
-  description: string;
-  timeAgo: string;
+interface Activity {
+  activity_id: number;
+  activity_type: 'status_change' | 'note';
+  load_id: string;
+  previous_status?: string;
+  new_status?: string;
+  changed_by?: string;
+  note_text?: string;
+  created_at: string;
+  broker_load_number?: string;
 }
 
-const activities: ActivityItem[] = [
-  {
-    id: "1",
-    description: "Load #L1234 changed to In Transit",
-    timeAgo: "2 hours ago"
-  },
-  {
-    id: "2",
-    description: "John Doe assigned to Load #L5678",
-    timeAgo: "4 hours ago"
-  },
-  {
-    id: "3",
-    description: "Load #L9012 delivered successfully",
-    timeAgo: "8 hours ago"
-  },
-  {
-    id: "4",
-    description: "New load #L3456 booked with ABC Logistics",
-    timeAgo: "Yesterday"
-  },
-  {
-    id: "5",
-    description: "Mike Johnson marked as available",
-    timeAgo: "Yesterday"
-  },
-];
-
 const RecentActivity: React.FC = () => {
+  const { recentActivity, isLoading } = useData();
+  const [activities, setActivities] = useState<Activity[]>([]);
+
+  useEffect(() => {
+    // Convert the recentActivity from DataProvider to our Activity type
+    if (recentActivity) {
+      const formattedActivities = recentActivity.map(item => ({
+        activity_id: item.note_id || 0,
+        activity_type: item.note_type === 'general' ? 'note' : 'status_change',
+        load_id: item.load_id || '',
+        note_text: item.note_text,
+        created_at: item.created_at || new Date().toISOString(),
+        broker_load_number: item.broker_load_number
+      }));
+      
+      setActivities(formattedActivities);
+    }
+  }, [recentActivity]);
+
+  // Set up realtime subscription for combined activities
+  useEffect(() => {
+    // Listen for changes to load_activities
+    const activitiesChannel = supabase
+      .channel('load-activities-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'load_activities'
+        },
+        (payload) => {
+          console.log('New activity:', payload);
+          // Refresh data when a new activity is inserted
+          // The DataProvider will handle the actual fetching
+        }
+      )
+      .subscribe();
+
+    // Listen for changes to load_notes
+    const notesChannel = supabase
+      .channel('load-notes-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'load_notes'
+        },
+        (payload) => {
+          console.log('New note:', payload);
+          // Refresh data when a new note is inserted
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(activitiesChannel);
+      supabase.removeChannel(notesChannel);
+    };
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="bg-truckmaster-card-bg p-5 rounded-lg border border-white/5 h-full">
+        <h2 className="text-white font-medium mb-4">Recent Activity</h2>
+        <div className="flex justify-center py-8">
+          <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-truckmaster-card-bg p-5 rounded-lg border border-white/5 h-full">
       <h2 className="text-white font-medium mb-4">Recent Activity</h2>
       <div className="space-y-4">
-        {activities.map((activity) => (
-          <div 
-            key={activity.id} 
-            className="flex items-start pb-4 border-b border-white/5 last:border-0 last:pb-0"
-          >
-            <div className="h-2 w-2 mt-2 rounded-full bg-truckmaster-purple mr-3 flex-shrink-0" />
-            <div>
-              <p className="text-sm text-white">{activity.description}</p>
-              <span className="text-xs text-truckmaster-gray-light">{activity.timeAgo}</span>
+        {recentActivity.length > 0 ? (
+          recentActivity.map((activity) => (
+            <div 
+              key={`${activity.note_id || ''}-${activity.created_at}`} 
+              className="flex items-start pb-4 border-b border-white/5 last:border-0 last:pb-0"
+            >
+              <div className="h-2 w-2 mt-2 rounded-full bg-truckmaster-purple mr-3 flex-shrink-0" />
+              <div>
+                <p className="text-sm text-white">
+                  {activity.note_text ? 
+                    `Note on Load #${activity.load_id || activity.broker_load_number}: ${activity.note_text}` : 
+                    `Status change on Load #${activity.load_id || activity.broker_load_number}`
+                  }
+                </p>
+                <span className="text-xs text-truckmaster-gray-light">
+                  {activity.created_at ? formatTimeAgo(activity.created_at) : ''}
+                </span>
+              </div>
             </div>
+          ))
+        ) : (
+          <div className="text-center py-4 text-truckmaster-gray-light">
+            No recent activity to display
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

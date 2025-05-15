@@ -32,10 +32,15 @@ interface Driver {
 }
 
 interface Activity {
+  activity_type?: string;
+  activity_id?: number;
   note_id?: number;
   load_id?: string;
   note_text?: string;
   note_type?: string;
+  previous_status?: string;
+  new_status?: string;
+  changed_by?: string;
   created_at?: string;
   broker_load_number?: string;
   load_type?: string;
@@ -134,11 +139,11 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     }
   };
 
-  // Fetch recent activity
+  // Fetch recent activity from combined view
   const fetchRecentActivity = async () => {
     try {
       const { data, error } = await supabase
-        .from('load_notes_view')
+        .from('combined_activity_view')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(10);
@@ -309,6 +314,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'load_notes' }, fetchData)
       .subscribe();
 
+    // Add subscription for the new load_activities table
+    const activitiesSubscription = supabase
+      .channel('activities-channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'load_activities' }, fetchData)
+      .subscribe();
+
     const pickupsSubscription = supabase
       .channel('pickups-channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pickup_locations' }, fetchData)
@@ -323,6 +334,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       supabase.removeChannel(loadsSubscription);
       supabase.removeChannel(driversSubscription);
       supabase.removeChannel(notesSubscription);
+      supabase.removeChannel(activitiesSubscription);
       supabase.removeChannel(pickupsSubscription);
       supabase.removeChannel(deliveriesSubscription);
     };

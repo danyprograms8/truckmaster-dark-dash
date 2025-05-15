@@ -26,13 +26,22 @@ export async function getDrivers() {
 }
 
 export async function getRecentActivity() {
-  // This would typically fetch from a dedicated activity table
-  // For now, combining data from load_notes and other sources
+  // Use the combined_activity_view that includes both load notes and status changes
   const { data, error } = await supabase
-    .from('load_notes_view')
+    .from('combined_activity_view')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(5);
+    .limit(10);
+  
+  if (error) throw error;
+  return data;
+}
+
+export async function getLoadActivities() {
+  const { data, error } = await supabase
+    .from('load_activities')
+    .select('*')
+    .order('created_at', { ascending: false });
   
   if (error) throw error;
   return data;
