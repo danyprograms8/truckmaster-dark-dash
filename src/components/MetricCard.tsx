@@ -11,6 +11,7 @@ interface MetricCardProps {
     isPositive: boolean;
   };
   className?: string;
+  color?: string; // Added color prop
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({ 
@@ -18,7 +19,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
   value, 
   icon, 
   trend, 
-  className 
+  className,
+  color // Added color prop
 }) => {
   return (
     <div className={cn(
@@ -39,7 +41,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
             </span>
           )}
         </div>
-        <div className="h-10 w-10 rounded-md bg-truckmaster-purple/20 text-truckmaster-purple flex items-center justify-center">
+        <div className={cn(
+          "h-10 w-10 rounded-md flex items-center justify-center",
+          color ? color : "bg-truckmaster-purple/20 text-truckmaster-purple"
+        )}>
           {icon}
         </div>
       </div>
