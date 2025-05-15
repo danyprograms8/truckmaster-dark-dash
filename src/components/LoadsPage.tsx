@@ -329,7 +329,7 @@ const LoadsPage: React.FC = () => {
           All <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">{loadCounts.all}</span>
         </Button>
         
-        {/* Status filter buttons - Order specifically positioned with Issues between In Transit and Delivered */}
+        {/* Status filter buttons - Reordered with Issues at the end */}
         <Button 
           key="booked"
           variant={statusFilter === 'booked' ? "default" : "outline"}
@@ -353,19 +353,6 @@ const LoadsPage: React.FC = () => {
           In Transit 
           <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
             {loadCounts['in_transit'] || 0}
-          </span>
-        </Button>
-        
-        <Button 
-          key="issues"
-          variant={statusFilter === 'issues' ? "default" : "outline"}
-          size="sm"
-          onClick={() => setStatusFilter('issues')}
-          className={`${statusFilter === 'issues' ? '' : 'bg-opacity-20'} ${statusFilter === 'issues' ? 'bg-amber-600 text-amber-100' : ''}`}
-        >
-          Issues 
-          <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
-            {loadCounts['issues'] || 0}
           </span>
         </Button>
         
@@ -405,6 +392,19 @@ const LoadsPage: React.FC = () => {
           Cancelled 
           <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
             {loadCounts['cancelled'] || 0}
+          </span>
+        </Button>
+        
+        <Button 
+          key="issues"
+          variant={statusFilter === 'issues' ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStatusFilter('issues')}
+          className={`${statusFilter === 'issues' ? '' : 'bg-opacity-20'} ${statusFilter === 'issues' ? 'bg-amber-600 text-amber-100' : ''}`}
+        >
+          Issues 
+          <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
+            {loadCounts['issues'] || 0}
           </span>
         </Button>
         

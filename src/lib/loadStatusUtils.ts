@@ -1,4 +1,3 @@
-
 import { supabase } from './supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
@@ -7,10 +6,10 @@ export type LoadStatus = 'booked' | 'in_transit' | 'issues' | 'delivered' | 'com
 export const statusOptions: { value: LoadStatus, label: string }[] = [
   { value: 'booked', label: 'Booked' },
   { value: 'in_transit', label: 'In Transit' },
-  { value: 'issues', label: 'Issues' },
   { value: 'delivered', label: 'Delivered' },
   { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' }
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'issues', label: 'Issues' }
 ];
 
 export const getStatusColor = (status: string): string => {
