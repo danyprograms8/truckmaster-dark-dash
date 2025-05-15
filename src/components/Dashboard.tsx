@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useData } from './DataProvider';
 import { Truck, Users, Calendar, CheckCircle } from 'lucide-react';
@@ -109,15 +110,17 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
       
-      {/* Quick Actions */}
-      <Card className="border-none shadow-none overflow-hidden box-border">
-        <CardHeader className="border-none">
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="border-none">
-          <QuickActions />
-        </CardContent>
-      </Card>
+      {/* Quick Actions - removed border and margin to prevent line */}
+      <div className="border-none bg-transparent">
+        <Card className="border-none shadow-none overflow-hidden box-border mt-0">
+          <CardHeader className="border-none">
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="border-none">
+            <QuickActions />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

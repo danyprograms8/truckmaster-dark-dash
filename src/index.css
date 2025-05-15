@@ -69,6 +69,24 @@
   hr {
     display: none !important;
   }
+  
+  /* Additional fixes for horizontal lines specifically for Quick Actions */
+  .card + .card,
+  .card + div,
+  div + .card {
+    border-top: none !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Ensure consistent background for all containers */
+  .px-6, .py-6, .p-6 {
+    background: transparent !important;
+  }
+  
+  /* Remove any margin bottom from container elements */
+  .mb-6:last-of-type {
+    margin-bottom: 1.5rem !important;
+  }
 }
 
 @layer utilities {
