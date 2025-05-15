@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { toast } from "@/components/ui/use-toast";
@@ -18,10 +19,12 @@ interface Load {
   updated_at?: string;
   pickup_city?: string;
   pickup_state?: string;
+  pickup_zip?: string;
   pickup_date?: string;
   pickup_time?: string;
   delivery_city?: string;
   delivery_state?: string;
+  delivery_zip?: string;
   delivery_date?: string;
   delivery_time?: string;
 }
@@ -131,7 +134,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       // Fetch first pickup location for each load
       const { data: pickupData, error: pickupError } = await supabase
         .from('pickup_locations')
-        .select('load_id, city, state, pickup_date, pickup_time')
+        .select('load_id, city, state, zipcode, pickup_date, pickup_time')
         .eq('sequence', 1);
       
       if (pickupError) throw pickupError;
@@ -149,7 +152,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         // Get the delivery location with highest sequence number for this load
         const { data: deliveryData, error: deliveryError } = await supabase
           .from('delivery_locations')
-          .select('load_id, city, state, delivery_date, delivery_time, sequence')
+          .select('load_id, city, state, zipcode, delivery_date, delivery_time, sequence')
           .eq('load_id', load.load_id)
           .order('sequence', { ascending: false })
           .limit(1);
@@ -182,10 +185,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
           status: normalizeStatus(load.status),
           pickup_city: pickup?.city,
           pickup_state: pickup?.state,
+          pickup_zip: pickup?.zipcode,
           pickup_date: pickup?.pickup_date,
           pickup_time: pickup?.pickup_time,
           delivery_city: delivery?.city,
           delivery_state: delivery?.state,
+          delivery_zip: delivery?.zipcode,
           delivery_date: delivery?.delivery_date,
           delivery_time: delivery?.delivery_time,
         };
