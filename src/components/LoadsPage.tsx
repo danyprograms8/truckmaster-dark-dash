@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,19 +18,29 @@ const LoadsTable: React.FC = () => {
   const [selectedLoad, setSelectedLoad] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [loadDetailLoading, setLoadDetailLoading] = useState(false);
+  const [updatingLoadIds, setUpdatingLoadIds] = useState<string[]>([]);
   
   // Initialize localLoads with loads from DataProvider
   useEffect(() => {
     setLocalLoads(loads);
   }, [loads]);
   
-  // Handle status change in a load
+  // Handle status change in a load - optimistic update
   const handleStatusChange = useCallback((loadId: string, newStatus: LoadStatus) => {
+    // Set this load as updating
+    setUpdatingLoadIds(prev => [...prev, loadId]);
+    
+    // Update local state immediately for optimistic UI
     setLocalLoads(prevLoads => 
       prevLoads.map(load => 
         load.load_id === loadId ? { ...load, status: newStatus } : load
       )
     );
+    
+    // Remove from updating after short delay
+    setTimeout(() => {
+      setUpdatingLoadIds(prev => prev.filter(id => id !== loadId));
+    }, 2000);
   }, []);
 
   // Open load details drawer
@@ -62,7 +73,7 @@ const LoadsTable: React.FC = () => {
     );
   });
 
-  // Maintain counts of loads by status
+  // Calculate counts of loads by status - will update automatically with localLoads
   const loadCounts = {
     all: localLoads.length,
     ...statusOptions.reduce((acc, option) => {
@@ -74,6 +85,14 @@ const LoadsTable: React.FC = () => {
       }
       return acc;
     }, {} as Record<string, number>)
+  };
+
+  // Add highlight class to recently updated rows
+  const getRowClassName = (loadId: string) => {
+    if (updatingLoadIds.includes(loadId)) {
+      return "bg-amber-900/20 transition-colors duration-500";
+    }
+    return "";
   };
 
   if (isLoading) {
@@ -160,7 +179,10 @@ const LoadsTable: React.FC = () => {
               <TableBody>
                 {filteredLoads.length > 0 ? (
                   filteredLoads.map((load) => (
-                    <TableRow key={load.id}>
+                    <TableRow 
+                      key={load.id} 
+                      className={getRowClassName(load.load_id)}
+                    >
                       <TableCell>{load.load_id}</TableCell>
                       <TableCell>{load.broker_name || 'N/A'}</TableCell>
                       <TableCell>{load.broker_load_number || 'N/A'}</TableCell>

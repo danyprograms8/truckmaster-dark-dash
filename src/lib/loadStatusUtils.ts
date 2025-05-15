@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 export type LoadStatus = 'booked' | 'in_transit' | 'delivered' | 'completed' | 'cancelled' | 'active';
 
@@ -19,8 +19,6 @@ export const getStatusColor = (status: string): string => {
       return 'bg-green-900 text-green-300';
     case 'booked':
       return 'bg-blue-900 text-blue-300';
-    case 'assigned':
-      return 'bg-purple-900 text-purple-300';
     case 'delivered':
       return 'bg-teal-900 text-teal-300';
     case 'completed':
@@ -50,11 +48,7 @@ export const formatStatusLabel = (status: string): string => {
 
 export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): Promise<boolean> => {
   try {
-    // Show toast indicating status update in progress
-    const loadingToast = toast({
-      title: "Updating Status",
-      description: `Changing load #${loadId} status to ${formatStatusLabel(newStatus)}...`,
-    });
+    // No toast notification here for load status updates - handled by optimistic UI
     
     // Update the load status in the database
     const { error } = await supabase
@@ -73,12 +67,7 @@ export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): P
       return false;
     }
 
-    // Show success toast
-    toast({
-      title: "Status Updated",
-      description: `Load #${loadId} status changed to ${formatStatusLabel(newStatus)}`,
-    });
-    
+    // No success toast notification anymore - keeping the UI clean
     return true;
   } catch (error) {
     console.error('Exception updating load status:', error);

@@ -22,6 +22,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
   const [status, setStatus] = useState<LoadStatus>(currentStatus as LoadStatus);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [optimisticStatus, setOptimisticStatus] = useState<LoadStatus | null>(null);
 
   // Sync local state when currentStatus prop changes
   useEffect(() => {
@@ -34,7 +35,15 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
       return;
     }
     
+    // Set optimistic UI update
+    const previousStatus = status;
+    setOptimisticStatus(newStatus);
     setIsUpdating(true);
+    
+    // Call parent callback immediately for optimistic update
+    if (onStatusChange) {
+      onStatusChange(newStatus);
+    }
     
     try {
       const success = await updateLoadStatus(loadId, newStatus);
@@ -46,19 +55,30 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
         // Show success indicator briefly
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 2000);
-        
-        // Call parent callback if provided
+      } else {
+        // Revert optimistic update if server update failed
+        setOptimisticStatus(null);
+        // Call parent callback to revert
         if (onStatusChange) {
-          onStatusChange(newStatus);
+          onStatusChange(previousStatus);
         }
       }
     } catch (error) {
       console.error('Error updating status:', error);
+      // Revert optimistic update if server update failed
+      setOptimisticStatus(null);
+      // Call parent callback to revert
+      if (onStatusChange) {
+        onStatusChange(previousStatus);
+      }
     } finally {
       setIsUpdating(false);
       setOpen(false);
     }
   };
+
+  // Determine which status to display - use optimistic first if available
+  const displayStatus = optimisticStatus || status;
 
   return (
     <div className="relative">
@@ -69,11 +89,11 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
             size="sm"
             className={cn(
               "flex items-center justify-between px-3 w-auto h-8 transition-all",
-              getStatusColor(status),
+              getStatusColor(displayStatus),
               isUpdating && "opacity-70"
             )}
           >
-            <span>{formatStatusLabel(status) || 'Unknown'}</span>
+            <span>{formatStatusLabel(displayStatus) || 'Unknown'}</span>
             {open ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
             {isUpdating && (
               <span className="ml-2 h-3 w-3 rounded-full animate-pulse bg-white/30"></span>
@@ -86,12 +106,12 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
               key={option.value}
               className={cn(
                 "flex justify-between",
-                status === option.value && "bg-gray-800"
+                displayStatus === option.value && "bg-gray-800"
               )}
               onClick={() => handleStatusChange(option.value)}
             >
               <span>{option.label}</span>
-              {status === option.value && <Check className="h-4 w-4" />}
+              {displayStatus === option.value && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
