@@ -5,10 +5,10 @@ import Navigation from './components/Navigation';
 
 const Layout: React.FC = () => {
   return (
-    <div className="flex min-h-screen bg-truckmaster-dark">
+    <div className="flex min-h-screen bg-truckmaster-dark border-none outline-none">
       <Navigation />
       <main className="flex-1 overflow-auto outline-none border-none bg-truckmaster-dark">
-        <div className="bg-truckmaster-dark border-none">
+        <div className="bg-truckmaster-dark border-none box-border">
           <Outlet />
         </div>
       </main>

@@ -61,3 +61,46 @@ hr,
 * + * {
   border-top: none !important;
 }
+
+/* Target application frame/layout components */
+.app-frame,
+.layout-frame,
+.app-container,
+.layout-grid,
+.app-wrapper,
+.layout-container,
+#root > div,
+body > div:first-child > div {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-clip: padding-box !important;
+}
+
+/* Target any deliberate divider lines in the layout */
+.layout-divider,
+.frame-separator,
+.grid-lines,
+.layout-borders,
+hr.frame-divider {
+  display: none !important;
+}
+
+/* Fix specific frame sections */
+.frame-header,
+.frame-content,
+.frame-footer,
+.main-section,
+.content-frame {
+  border: none !important;
+  border-bottom: none !important;
+  border-top: none !important;
+}
+
+/* Fix any potential background overlays */
+.background-grid,
+.grid-overlay,
+.layout-background {
+  opacity: 0 !important;
+  display: none !important;
+}

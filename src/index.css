@@ -112,6 +112,44 @@
   main > div > div {
     background-color: #1A1F2C !important;
   }
+
+  /* Fix for application frame elements */
+  .app-frame,
+  .layout-frame,
+  .app-container,
+  .layout-grid,
+  .app-wrapper,
+  .layout-container,
+  #root > div,
+  body > div:first-child > div,
+  #root > div > div,
+  main > div > div > div {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background-clip: padding-box !important;
+  }
+  
+  /* Target any deliberate divider lines in the layout */
+  .layout-divider,
+  .frame-separator,
+  .grid-lines,
+  .layout-borders,
+  hr.frame-divider {
+    display: none !important;
+  }
+  
+  /* Fix adjacent elements spacing to prevent lines */
+  div + div {
+    border-top: none !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Remove borders from all elements */
+  div, section, article, aside, nav, header, footer, main {
+    border: none !important;
+    box-shadow: none !important;
+  }
 }
 
 @layer utilities {
