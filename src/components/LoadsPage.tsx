@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-const LoadsPage: React.FC = () => {
+const LoadsTable: React.FC = () => {
   const { loads, isLoading } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -53,27 +54,27 @@ const LoadsPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-600">
-              <thead>
-                <tr>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-300">Load ID</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-300">Broker</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-300">Broker Load #</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-300">Type</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-300">Status</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-300">Rate</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-300">Driver</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-700">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Load ID</TableHead>
+                  <TableHead>Broker</TableHead>
+                  <TableHead>Broker Load #</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Rate</TableHead>
+                  <TableHead>Driver</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {filteredLoads.length > 0 ? (
                   filteredLoads.map((load) => (
-                    <tr key={load.id} className="hover:bg-gray-800">
-                      <td className="py-3 px-4 text-sm">{load.load_id}</td>
-                      <td className="py-3 px-4 text-sm">{load.broker_name || 'N/A'}</td>
-                      <td className="py-3 px-4 text-sm">{load.broker_load_number || 'N/A'}</td>
-                      <td className="py-3 px-4 text-sm">{load.load_type || 'N/A'}</td>
-                      <td className="py-3 px-4 text-sm">
+                    <TableRow key={load.id}>
+                      <TableCell>{load.load_id}</TableCell>
+                      <TableCell>{load.broker_name || 'N/A'}</TableCell>
+                      <TableCell>{load.broker_load_number || 'N/A'}</TableCell>
+                      <TableCell>{load.load_type || 'N/A'}</TableCell>
+                      <TableCell>
                         <span className={`px-2 py-1 rounded-full text-xs ${
                           load.status === 'active' ? 'bg-green-900 text-green-300' :
                           load.status === 'in_transit' ? 'bg-blue-900 text-blue-300' :
@@ -83,23 +84,22 @@ const LoadsPage: React.FC = () => {
                         }`}>
                           {load.status || 'Unknown'}
                         </span>
-                      </td>
-                      <td className="py-3 px-4 text-sm">${load.rate?.toFixed(2) || 'N/A'}</td>
-                      <td className="py-3 px-4 text-sm">
-                        {/* In a real app, you'd join with drivers table */}
+                      </TableCell>
+                      <TableCell>${load.rate?.toFixed(2) || 'N/A'}</TableCell>
+                      <TableCell>
                         {load.driver_id || 'Unassigned'}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))
                 ) : (
-                  <tr>
-                    <td colSpan={7} className="py-6 text-center text-gray-400">
+                  <TableRow>
+                    <TableCell colSpan={7} className="py-6 text-center text-gray-400">
                       No loads found matching your search criteria
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>
@@ -107,4 +107,4 @@ const LoadsPage: React.FC = () => {
   );
 };
 
-export default LoadsPage;
+export default LoadsTable;
