@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,8 +13,23 @@ const LoadsTable: React.FC = () => {
   const { loads, isLoading, refreshData } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<LoadStatus | 'all'>('all');
+  const [localLoads, setLocalLoads] = useState(loads);
   
-  const filteredLoads = loads.filter(load => 
+  // Initialize localLoads with loads from DataProvider
+  useEffect(() => {
+    setLocalLoads(loads);
+  }, [loads]);
+  
+  // Handle status change in a load
+  const handleStatusChange = useCallback((loadId: string, newStatus: LoadStatus) => {
+    setLocalLoads(prevLoads => 
+      prevLoads.map(load => 
+        load.load_id === loadId ? { ...load, status: newStatus } : load
+      )
+    );
+  }, []);
+  
+  const filteredLoads = localLoads.filter(load => 
     (statusFilter === 'all' || load.status === statusFilter) && 
     (load.load_id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
      load.broker_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -23,9 +38,9 @@ const LoadsTable: React.FC = () => {
 
   // Maintain counts of loads by status
   const loadCounts = {
-    all: loads.length,
+    all: localLoads.length,
     ...statusOptions.reduce((acc, option) => {
-      acc[option.value] = loads.filter(load => load.status === option.value).length;
+      acc[option.value] = localLoads.filter(load => load.status === option.value).length;
       return acc;
     }, {} as Record<string, number>)
   };
@@ -121,7 +136,8 @@ const LoadsTable: React.FC = () => {
                       <TableCell>
                         <StatusDropdown 
                           loadId={load.load_id} 
-                          currentStatus={load.status} 
+                          currentStatus={load.status}
+                          onStatusChange={(newStatus) => handleStatusChange(load.load_id, newStatus)} 
                         />
                       </TableCell>
                       <TableCell>${load.rate?.toFixed(2) || 'N/A'}</TableCell>

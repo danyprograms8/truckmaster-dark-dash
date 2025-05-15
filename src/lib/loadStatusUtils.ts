@@ -37,11 +37,19 @@ export const getStatusColor = (status: string): string => {
 
 export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): Promise<boolean> => {
   try {
+    // Show toast indicating status update in progress
+    const loadingToast = toast({
+      title: "Updating Status",
+      description: `Changing load #${loadId} status to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}...`,
+    });
+    
+    // Update the load status in the database
     const { error } = await supabase
       .from('loads')
       .update({ status: newStatus })
       .eq('load_id', loadId);
     
+    // Handle errors if any
     if (error) {
       console.error('Error updating load status:', error);
       toast({
@@ -52,10 +60,12 @@ export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): P
       return false;
     }
 
+    // Show success toast
     toast({
       title: "Status Updated",
       description: `Load #${loadId} status changed to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`,
     });
+    
     return true;
   } catch (error) {
     console.error('Exception updating load status:', error);
