@@ -20,6 +20,8 @@ import LoadDetailsDrawer from './LoadDetailsDrawer';
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import MonthYearSelector from './MonthYearSelector';
+import { isWithinInterval, startOfMonth, endOfMonth, parseISO } from 'date-fns';
 
 const LoadsPage: React.FC = () => {
   const { loads, isLoading, refreshData } = useData();
@@ -31,6 +33,7 @@ const LoadsPage: React.FC = () => {
   const [loadDetailLoading, setLoadDetailLoading] = useState(false);
   const [updatingLoadIds, setUpdatingLoadIds] = useState<string[]>([]);
   const [countInconsistency, setCountInconsistency] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
   const { toast } = useToast();
   
   // Run migration from Active to In Transit on first load
@@ -103,9 +106,59 @@ const LoadsPage: React.FC = () => {
     }, 500);
   };
   
-  // Filter loads based on status and search term
+  // Handle month/year selection
+  const handleMonthYearChange = (date: Date | null) => {
+    setSelectedMonth(date);
+    
+    // Display a toast notification about the filter change
+    if (date) {
+      toast({
+        title: "Date Filter Applied",
+        description: `Showing loads for ${date.toLocaleString('default', { month: 'long', year: 'numeric' })}`,
+        duration: 3000,
+      });
+    } else {
+      toast({
+        title: "All Time View",
+        description: "Showing all loads regardless of date",
+        duration: 3000,
+      });
+    }
+  };
+  
+  // Check if a load was active during the selected month
+  const isLoadActiveInMonth = useCallback((load: any, date: Date) => {
+    if (!load.created_at) return false;
+    
+    const loadCreatedAt = typeof load.created_at === 'string' 
+      ? parseISO(load.created_at) 
+      : load.created_at;
+    
+    const monthStart = startOfMonth(date);
+    const monthEnd = endOfMonth(date);
+    
+    // Check if load was created in this month
+    if (isWithinInterval(loadCreatedAt, { start: monthStart, end: monthEnd })) {
+      return true;
+    }
+    
+    // TODO: In a real implementation, we would also check:
+    // - Pickup dates in this month
+    // - Delivery dates in this month  
+    // - Status changes during this month
+    // This would require additional data we don't have in the current model
+
+    return false;
+  }, []);
+  
+  // Filter loads based on status, search term, and selected month
   const filteredLoads = useMemo(() => {
     return localLoads.filter(load => {
+      // Filter by selected month if applicable
+      if (selectedMonth && !isLoadActiveInMonth(load, selectedMonth)) {
+        return false;
+      }
+      
       // Normalize load status for consistent comparison 
       const normalizedLoadStatus = normalizeStatus(load.status);
       
@@ -125,15 +178,15 @@ const LoadsPage: React.FC = () => {
         load.broker_load_number?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     });
-  }, [localLoads, statusFilter, searchTerm]);
+  }, [localLoads, statusFilter, searchTerm, selectedMonth, isLoadActiveInMonth]);
 
-  // Calculate counts of loads by status - will update automatically with localLoads
+  // Calculate counts of loads by status - will update automatically with localLoads and filter
   const loadCounts = useMemo(() => {
-    console.log("Recalculating load counts from", localLoads.length, "loads");
+    console.log("Recalculating load counts from", filteredLoads.length, "loads");
     
     // Initialize counts object with zero counts
     const counts: Record<string, number> = {
-      all: localLoads.length,
+      all: filteredLoads.length,
     };
     
     // Set all status options to 0 initially
@@ -145,7 +198,7 @@ const LoadsPage: React.FC = () => {
     const statusTracker: Record<string, string[]> = {};
     
     // Count loads for each status
-    localLoads.forEach(load => {
+    filteredLoads.forEach(load => {
       const normalizedStatus = normalizeStatus(load.status);
       
       if (!statusTracker[normalizedStatus]) {
@@ -177,7 +230,7 @@ const LoadsPage: React.FC = () => {
     }
     
     return counts;
-  }, [localLoads]);
+  }, [filteredLoads]);
 
   // Add highlight class to recently updated rows
   const getRowClassName = (loadId: string) => {
@@ -237,6 +290,9 @@ const LoadsPage: React.FC = () => {
           </Button>
         </div>
       </div>
+      
+      {/* Month/Year Selector */}
+      <MonthYearSelector onDateChange={handleMonthYearChange} />
       
       {countInconsistency && (
         <Alert variant="destructive" className="mb-4 bg-amber-900/20 text-amber-300 border-amber-700">
@@ -298,6 +354,11 @@ const LoadsPage: React.FC = () => {
             {statusFilter === 'all' 
               ? 'All Loads' 
               : `${formatStatusLabel(statusFilter)} Loads`}
+            {selectedMonth && (
+              <span className="text-sm font-normal ml-2 text-muted-foreground">
+                • {selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+              </span>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -352,7 +413,11 @@ const LoadsPage: React.FC = () => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={8} className="py-6 text-center text-gray-400">
-                      {searchTerm ? 'No loads found matching your search criteria' : 'No loads found'}
+                      {searchTerm 
+                        ? 'No loads found matching your search criteria' 
+                        : selectedMonth 
+                          ? `No loads found for ${selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}` 
+                          : 'No loads found'}
                     </TableCell>
                   </TableRow>
                 )}
