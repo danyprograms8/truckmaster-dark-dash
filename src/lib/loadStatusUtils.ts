@@ -1,3 +1,4 @@
+
 import { supabase } from './supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
@@ -14,7 +15,7 @@ export const statusOptions: { value: LoadStatus, label: string }[] = [
 
 export const getStatusColor = (status: string): string => {
   // Normalize status to lowercase for comparison
-  const normalizedStatus = status?.toLowerCase();
+  const normalizedStatus = normalizeStatus(status);
   
   switch (normalizedStatus) {
     case 'active':
@@ -38,13 +39,13 @@ export const getStatusColor = (status: string): string => {
 // IMPORTANT: We've changed this to ONLY include loads with exactly 'active' status
 // and NOT include 'in_transit' loads as active
 export const isActiveStatus = (status: string): boolean => {
-  const normalizedStatus = status?.toLowerCase();
+  const normalizedStatus = normalizeStatus(status);
   return normalizedStatus === 'active';
 };
 
 // This helper function returns true if a status is "in_transit"
 export const isInTransitStatus = (status: string): boolean => {
-  const normalizedStatus = status?.toLowerCase();
+  const normalizedStatus = normalizeStatus(status);
   return normalizedStatus === 'in_transit';
 };
 
@@ -52,14 +53,21 @@ export const isInTransitStatus = (status: string): boolean => {
 export const normalizeStatus = (status: string): string => {
   if (!status) return '';
   
+  // First convert to lowercase
   const lowercaseStatus = status.toLowerCase();
   
-  // Handle special cases
-  if (lowercaseStatus === 'in_transit' || lowercaseStatus === 'in transit') {
+  // Handle special cases for "in transit" format variations
+  if (lowercaseStatus === 'in_transit' || lowercaseStatus === 'in transit' || 
+      lowercaseStatus === 'intransit' || lowercaseStatus === 'in-transit') {
     return 'in_transit';
   }
   
-  // Remove any spaces and return the lowercase version
+  // Handle "cancelled" vs "canceled" spelling variations
+  if (lowercaseStatus === 'cancelled' || lowercaseStatus === 'canceled') {
+    return 'cancelled';
+  }
+  
+  // Remove any spaces and return the lowercase version for all other statuses
   return lowercaseStatus.replace(/\s+/g, '');
 };
 
@@ -67,7 +75,7 @@ export const normalizeStatus = (status: string): string => {
 export const formatStatusLabel = (status: string): string => {
   if (!status) return '';
   
-  const normalizedStatus = status.toLowerCase();
+  const normalizedStatus = normalizeStatus(status);
   
   if (normalizedStatus === 'in_transit') {
     return 'In Transit';
@@ -76,12 +84,78 @@ export const formatStatusLabel = (status: string): string => {
   return normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1).toLowerCase();
 };
 
+// Get a count of loads by status directly from the database
+export const getLoadCountsByStatus = async (): Promise<Record<string, number>> => {
+  try {
+    const { data, error } = await supabase
+      .from('loads')
+      .select('status');
+    
+    if (error) {
+      console.error('Error getting load counts:', error);
+      throw error;
+    }
+    
+    // Initialize counts with 0 for all statuses
+    const counts: Record<string, number> = {
+      all: data.length,
+    };
+    
+    // Set all status options to 0 initially
+    statusOptions.forEach(option => {
+      counts[option.value] = 0;
+    });
+    
+    // Count actual loads for each status
+    data.forEach(load => {
+      const normalizedStatus = normalizeStatus(load.status);
+      
+      // Count for specific normalized statuses
+      if (normalizedStatus === 'active') {
+        counts['active'] = (counts['active'] || 0) + 1;
+      } else if (normalizedStatus === 'in_transit') {
+        counts['in_transit'] = (counts['in_transit'] || 0) + 1;
+      } else if (normalizedStatus === 'booked') {
+        counts['booked'] = (counts['booked'] || 0) + 1;
+      } else if (normalizedStatus === 'delivered') {
+        counts['delivered'] = (counts['delivered'] || 0) + 1;
+      } else if (normalizedStatus === 'completed') {
+        counts['completed'] = (counts['completed'] || 0) + 1;
+      } else if (normalizedStatus === 'cancelled') {
+        counts['cancelled'] = (counts['cancelled'] || 0) + 1;
+      }
+    });
+    
+    console.log("Database load counts:", counts);
+    
+    // Verify count integrity
+    let specificStatusSum = 0;
+    statusOptions.forEach(option => {
+      specificStatusSum += counts[option.value] || 0;
+    });
+    
+    if (specificStatusSum !== counts.all) {
+      console.warn(`Database count mismatch: Total=${counts.all}, Sum of categories=${specificStatusSum}`);
+    }
+    
+    return counts;
+  } catch (error) {
+    console.error('Exception getting load counts:', error);
+    return { all: 0 };
+  }
+};
+
 export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): Promise<boolean> => {
   try {
+    console.log(`Updating load ${loadId} to status: ${newStatus}`);
+    
+    // Normalize the status before saving to database
+    const normalizedStatus = normalizeStatus(newStatus);
+    
     // Update the load status in the database
     const { error } = await supabase
       .from('loads')
-      .update({ status: newStatus })
+      .update({ status: normalizedStatus })
       .eq('load_id', loadId);
     
     // Handle errors if any
@@ -89,7 +163,8 @@ export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): P
       console.error('Error updating load status:', error);
       return false;
     }
-
+    
+    console.log(`Successfully updated load ${loadId} to status: ${normalizedStatus}`);
     return true;
   } catch (error) {
     console.error('Exception updating load status:', error);

@@ -4,15 +4,24 @@ import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Filter, FileText, RefreshCw } from 'lucide-react';
+import { Plus, Search, Filter, FileText, RefreshCw, AlertCircle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import StatusDropdown from './StatusDropdown';
-import { LoadStatus, statusOptions, getStatusColor, isActiveStatus, isInTransitStatus, formatStatusLabel } from '@/lib/loadStatusUtils';
+import { 
+  LoadStatus, 
+  statusOptions, 
+  getStatusColor, 
+  isActiveStatus, 
+  isInTransitStatus, 
+  formatStatusLabel,
+  normalizeStatus
+} from '@/lib/loadStatusUtils';
 import LoadDetailsDrawer from './LoadDetailsDrawer';
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const LoadsTable: React.FC = () => {
+const LoadsPage: React.FC = () => {
   const { loads, isLoading, refreshData } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<LoadStatus | 'all'>('all');
@@ -21,6 +30,7 @@ const LoadsTable: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [loadDetailLoading, setLoadDetailLoading] = useState(false);
   const [updatingLoadIds, setUpdatingLoadIds] = useState<string[]>([]);
+  const [countInconsistency, setCountInconsistency] = useState(false);
   const { toast } = useToast();
   
   // Initialize localLoads with loads from DataProvider
@@ -28,12 +38,20 @@ const LoadsTable: React.FC = () => {
     setLocalLoads(loads);
     
     // Debug logging to check status distributions
-    const statusCounts: Record<string, number> = {};
+    const statusCounts: Record<string, number> = { all: 0 };
+    const statusMap: Record<string, string[]> = {};
+    
+    // Get detailed status breakdown
     loads.forEach(load => {
-      const status = load.status.toLowerCase();
-      statusCounts[status] = (statusCounts[status] || 0) + 1;
+      const normalizedStatus = normalizeStatus(load.status);
+      if (!statusMap[normalizedStatus]) {
+        statusMap[normalizedStatus] = [];
+      }
+      statusMap[normalizedStatus].push(load.load_id);
+      statusCounts.all++;
     });
-    console.log('Current load status distribution:', statusCounts);
+    
+    console.log('Current load status distribution:', statusMap);
   }, [loads]);
   
   // Handle status change in a load - optimistic update
@@ -69,24 +87,16 @@ const LoadsTable: React.FC = () => {
   // Filter loads based on status and search term
   const filteredLoads = useMemo(() => {
     return localLoads.filter(load => {
-      // Normalize status for consistent comparison 
-      const normalizedLoadStatus = load.status.toLowerCase();
+      // Normalize load status for consistent comparison 
+      const normalizedLoadStatus = normalizeStatus(load.status);
       
-      // Special handling for "active" filter to include ONLY "active" status (not "in_transit")
-      if (statusFilter === 'active') {
-        if (!isActiveStatus(normalizedLoadStatus)) {
+      // Filter by status if a specific status is selected
+      if (statusFilter !== 'all') {
+        const normalizedFilterStatus = normalizeStatus(statusFilter);
+        
+        if (normalizedLoadStatus !== normalizedFilterStatus) {
           return false;
         }
-      }
-      // Special handling for "in_transit" filter
-      else if (statusFilter === 'in_transit') {
-        if (!isInTransitStatus(normalizedLoadStatus)) {
-          return false;
-        }
-      }
-      // All other filters use exact matching
-      else if (statusFilter !== 'all' && normalizedLoadStatus !== statusFilter.toLowerCase()) {
-        return false;
       }
       
       // Search term filtering
@@ -112,33 +122,22 @@ const LoadsTable: React.FC = () => {
       counts[option.value] = 0;
     });
     
-    // Debug tracking
+    // Track which loads are counted for each status (for debugging)
     const statusTracker: Record<string, string[]> = {};
     
     // Count loads for each status
     localLoads.forEach(load => {
-      const normalizedStatus = load.status.toLowerCase();
+      const normalizedStatus = normalizeStatus(load.status);
       
-      // Track which loads are counted where (for debugging)
       if (!statusTracker[normalizedStatus]) {
         statusTracker[normalizedStatus] = [];
       }
       statusTracker[normalizedStatus].push(load.load_id);
       
-      // For "active" status, count ONLY "active" (not "in_transit")
-      if (isActiveStatus(normalizedStatus)) {
-        counts['active'] = (counts['active'] || 0) + 1;
-      }
-      
-      // Count for "in_transit" status specifically
-      if (isInTransitStatus(normalizedStatus)) {
-        counts['in_transit'] = (counts['in_transit'] || 0) + 1;
-      }
-      
-      // Count for each specific status
+      // Count for each specific normalized status
       statusOptions.forEach(option => {
-        // Only increment if it's an exact match with this option
-        if (normalizedStatus === option.value.toLowerCase()) {
+        const normalizedOption = normalizeStatus(option.value);
+        if (normalizedStatus === normalizedOption) {
           counts[option.value] = (counts[option.value] || 0) + 1;
         }
       });
@@ -150,6 +149,10 @@ const LoadsTable: React.FC = () => {
     
     // Data integrity check - sum of all specific statuses should equal total
     const specificStatusSum = statusOptions.reduce((sum, option) => sum + (counts[option.value] || 0), 0);
+    
+    // Check for inconsistencies
+    setCountInconsistency(specificStatusSum !== counts.all);
+    
     if (specificStatusSum !== counts.all) {
       console.warn(`Status count mismatch: Total=${counts.all}, Sum of categories=${specificStatusSum}`);
     }
@@ -216,6 +219,15 @@ const LoadsTable: React.FC = () => {
         </div>
       </div>
       
+      {countInconsistency && (
+        <Alert variant="warning" className="mb-4 bg-amber-900/20 text-amber-300 border-amber-700">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Status count inconsistency detected. Please check the diagnostics page or refresh the data.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="mb-6 flex flex-wrap gap-2 items-center">
         <Button 
           variant={statusFilter === 'all' ? "default" : "outline"}
@@ -255,7 +267,7 @@ const LoadsTable: React.FC = () => {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Refresh counts</p>
+              <p>Refresh counts from server</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -341,4 +353,4 @@ const LoadsTable: React.FC = () => {
   );
 };
 
-export default LoadsTable;
+export default LoadsPage;

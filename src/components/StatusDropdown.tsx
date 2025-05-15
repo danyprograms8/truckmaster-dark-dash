@@ -9,7 +9,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LoadStatus, statusOptions, getStatusColor, updateLoadStatus, formatStatusLabel, normalizeStatus } from "@/lib/loadStatusUtils";
+import { 
+  LoadStatus, 
+  statusOptions, 
+  getStatusColor, 
+  updateLoadStatus, 
+  formatStatusLabel, 
+  normalizeStatus 
+} from "@/lib/loadStatusUtils";
 import { useToast } from "@/hooks/use-toast";
 
 interface StatusDropdownProps {
@@ -29,8 +36,10 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
   // Sync local state when currentStatus prop changes
   useEffect(() => {
     // Use normalizeStatus to ensure consistent format
-    setStatus(normalizeStatus(currentStatus) as LoadStatus);
-  }, [currentStatus]);
+    const normalized = normalizeStatus(currentStatus) as LoadStatus;
+    console.log(`StatusDropdown: setting normalized status for load ${loadId}: "${currentStatus}" -> "${normalized}"`);
+    setStatus(normalized);
+  }, [currentStatus, loadId]);
 
   const handleStatusChange = async (newStatus: LoadStatus) => {
     // Normalize both statuses for comparison
@@ -103,6 +112,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
 
   // Determine which status to display - use optimistic first if available
   const displayStatus = optimisticStatus || status;
+  const displayLabel = formatStatusLabel(displayStatus);
 
   return (
     <div className="relative">
@@ -117,7 +127,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
               isUpdating && "opacity-70"
             )}
           >
-            <span>{formatStatusLabel(displayStatus) || 'Unknown'}</span>
+            <span>{displayLabel || 'Unknown'}</span>
             {open ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
             {isUpdating && (
               <span className="ml-2 h-3 w-3 rounded-full animate-pulse bg-white/30"></span>
