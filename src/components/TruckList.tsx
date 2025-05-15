@@ -101,38 +101,43 @@ const TruckList: React.FC = () => {
   if (isLoading) {
     return (
       <div className="py-4 text-center">
-        <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
-        <p className="text-sm text-muted-foreground">Loading truck information...</p>
+        <div className="animate-spin h-5 w-5 border-2 border-green-400 border-t-transparent rounded-full mx-auto mb-2"></div>
+        <p className="text-sm text-gray-300">Loading truck information...</p>
       </div>
     );
   }
 
   if (deliveryInfo.length === 0) {
     return (
-      <div className="py-4 text-center">
-        <Truck className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">No active trucks available</p>
+      <div className="py-6 text-center">
+        <Truck className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+        <p className="text-gray-300">No active trucks available</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-2 max-h-80 overflow-y-auto">
-      <div className="grid grid-cols-4 gap-2 text-xs font-medium text-muted-foreground pb-1 border-b">
+    <div className="space-y-2">
+      <div className="grid grid-cols-4 gap-2 text-xs font-medium text-gray-400 pb-1 border-b border-truckmaster-gray-dark">
         <div>Driver</div>
         <div>Location</div>
         <div>Date</div>
         <div>Time</div>
       </div>
       
-      {deliveryInfo.map(info => (
-        <div key={info.driverId} className="grid grid-cols-4 gap-2 py-2 border-b border-muted text-sm hover:bg-muted/30 rounded-sm px-1">
-          <div className="font-medium">{info.driverName}</div>
-          <div>{info.location}</div>
-          <div>{info.deliveryDate}</div>
-          <div>{info.deliveryTime}</div>
-        </div>
-      ))}
+      <div className="space-y-1">
+        {deliveryInfo.map(info => (
+          <div 
+            key={info.driverId} 
+            className="grid grid-cols-4 gap-2 py-2 border-b border-truckmaster-gray-dark text-sm hover:bg-white/5 transition-colors rounded-sm px-1"
+          >
+            <div className="font-medium text-white">{info.driverName}</div>
+            <div className="text-gray-200">{info.location}</div>
+            <div className="text-gray-200">{info.deliveryDate}</div>
+            <div className="text-gray-200">{info.deliveryTime}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
