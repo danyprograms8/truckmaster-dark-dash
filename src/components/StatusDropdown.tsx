@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +18,12 @@ import {
   normalizeStatus 
 } from "@/lib/loadStatusUtils";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 
 interface StatusDropdownProps {
   loadId: string;
@@ -75,6 +81,15 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
         // Show success indicator briefly
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 2000);
+        
+        // Show additional message when moving to Issues status
+        if (normalizedNewStatus === 'issues') {
+          toast({
+            title: "Load marked with Issues",
+            description: "This load requires attention to resolve problems.",
+            duration: 5000,
+          });
+        }
       } else {
         // Revert optimistic update if server update failed
         setOptimisticStatus(null);
@@ -114,6 +129,9 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
   // Determine which status to display - use optimistic first if available
   const displayStatus = optimisticStatus || status;
   const displayLabel = formatStatusLabel(displayStatus);
+  
+  // Check if status is "Issues" to show additional info icon
+  const isIssuesStatus = normalizeStatus(displayStatus) === 'issues';
 
   return (
     <div className="relative">
@@ -129,6 +147,9 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
             )}
           >
             <span>{displayLabel || 'Unknown'}</span>
+            {isIssuesStatus && (
+              <AlertCircle className="ml-1 h-3 w-3" />
+            )}
             {open ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
             {isUpdating && (
               <span className="ml-2 h-3 w-3 rounded-full animate-pulse bg-white/30"></span>
@@ -137,17 +158,28 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-40 bg-gray-900 border-gray-800">
           {statusOptions.map((option) => (
-            <DropdownMenuItem 
-              key={option.value}
-              className={cn(
-                "flex justify-between",
-                normalizeStatus(displayStatus) === normalizeStatus(option.value) && "bg-gray-800"
-              )}
-              onClick={() => handleStatusChange(option.value)}
-            >
-              <span>{option.label}</span>
-              {normalizeStatus(displayStatus) === normalizeStatus(option.value) && <Check className="h-4 w-4" />}
-            </DropdownMenuItem>
+            <TooltipProvider key={option.value}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuItem 
+                    className={cn(
+                      "flex justify-between",
+                      normalizeStatus(displayStatus) === normalizeStatus(option.value) && "bg-gray-800"
+                    )}
+                    onClick={() => handleStatusChange(option.value)}
+                  >
+                    <span>{option.label}</span>
+                    {normalizeStatus(displayStatus) === normalizeStatus(option.value) && <Check className="h-4 w-4" />}
+                    {option.value === 'issues' && <AlertCircle className="h-3 w-3 ml-1 text-amber-400" />}
+                  </DropdownMenuItem>
+                </TooltipTrigger>
+                {option.value === 'issues' && (
+                  <TooltipContent side="right" className="max-w-xs">
+                    <p>Issues status indicates loads that have encountered problems requiring attention</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>

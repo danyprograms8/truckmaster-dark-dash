@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -330,20 +329,84 @@ const LoadsPage: React.FC = () => {
           All <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">{loadCounts.all}</span>
         </Button>
         
-        {statusOptions.map(status => (
-          <Button 
-            key={status.value}
-            variant={statusFilter === status.value ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter(status.value)}
-            className={`${statusFilter === status.value ? '' : 'bg-opacity-20'}`}
-          >
-            {status.label} 
-            <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
-              {loadCounts[status.value] || 0}
-            </span>
-          </Button>
-        ))}
+        {/* Status filter buttons - Order specifically positioned with Issues between In Transit and Delivered */}
+        <Button 
+          key="booked"
+          variant={statusFilter === 'booked' ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStatusFilter('booked')}
+          className={`${statusFilter === 'booked' ? '' : 'bg-opacity-20'}`}
+        >
+          Booked 
+          <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
+            {loadCounts['booked'] || 0}
+          </span>
+        </Button>
+        
+        <Button 
+          key="in_transit"
+          variant={statusFilter === 'in_transit' ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStatusFilter('in_transit')}
+          className={`${statusFilter === 'in_transit' ? '' : 'bg-opacity-20'}`}
+        >
+          In Transit 
+          <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
+            {loadCounts['in_transit'] || 0}
+          </span>
+        </Button>
+        
+        <Button 
+          key="issues"
+          variant={statusFilter === 'issues' ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStatusFilter('issues')}
+          className={`${statusFilter === 'issues' ? '' : 'bg-opacity-20'} ${statusFilter === 'issues' ? 'bg-amber-600 text-amber-100' : ''}`}
+        >
+          Issues 
+          <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
+            {loadCounts['issues'] || 0}
+          </span>
+        </Button>
+        
+        <Button 
+          key="delivered"
+          variant={statusFilter === 'delivered' ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStatusFilter('delivered')}
+          className={`${statusFilter === 'delivered' ? '' : 'bg-opacity-20'}`}
+        >
+          Delivered 
+          <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
+            {loadCounts['delivered'] || 0}
+          </span>
+        </Button>
+        
+        <Button 
+          key="completed"
+          variant={statusFilter === 'completed' ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStatusFilter('completed')}
+          className={`${statusFilter === 'completed' ? '' : 'bg-opacity-20'}`}
+        >
+          Completed 
+          <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
+            {loadCounts['completed'] || 0}
+          </span>
+        </Button>
+        
+        <Button 
+          key="cancelled"
+          variant={statusFilter === 'cancelled' ? "default" : "outline"}
+          size="sm"
+          onClick={() => setStatusFilter('cancelled')}
+          className={`${statusFilter === 'cancelled' ? '' : 'bg-opacity-20'}`}
+        >
+          Cancelled 
+          <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
+            {loadCounts['cancelled'] || 0}
+          </span>
+        </Button>
         
         <TooltipProvider>
           <Tooltip>

@@ -1,11 +1,13 @@
+
 import { supabase } from './supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
-export type LoadStatus = 'booked' | 'in_transit' | 'delivered' | 'completed' | 'cancelled';
+export type LoadStatus = 'booked' | 'in_transit' | 'issues' | 'delivered' | 'completed' | 'cancelled';
 
 export const statusOptions: { value: LoadStatus, label: string }[] = [
   { value: 'booked', label: 'Booked' },
   { value: 'in_transit', label: 'In Transit' },
+  { value: 'issues', label: 'Issues' },
   { value: 'delivered', label: 'Delivered' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' }
@@ -20,6 +22,8 @@ export const getStatusColor = (status: string): string => {
       return 'bg-blue-500 text-white';
     case 'booked':
       return 'bg-blue-900 text-blue-300';
+    case 'issues':
+      return 'bg-amber-600 text-amber-100';
     case 'delivered':
       return 'bg-teal-900 text-teal-300';
     case 'completed':
@@ -59,6 +63,12 @@ export const normalizeStatus = (status: string): string => {
   // Handle "cancelled" vs "canceled" spelling variations
   if (lowercaseStatus === 'cancelled' || lowercaseStatus === 'canceled') {
     return 'cancelled';
+  }
+  
+  // Handle "issues" variations
+  if (lowercaseStatus === 'issues' || lowercaseStatus === 'issue' || 
+      lowercaseStatus === 'problem' || lowercaseStatus === 'problems') {
+    return 'issues';
   }
   
   // Remove any spaces and return the lowercase version for all other statuses
