@@ -53,7 +53,7 @@ const QuickActions: React.FC = () => {
         <QuickAction 
           title="Assign Driver" 
           description="Assign driver to a load" 
-          icon={<Person className="h-5 w-5" />} 
+          icon={<UserPlus className="h-5 w-5" />} 
           color="#1EAEDB" 
         />
         <QuickAction 
@@ -74,7 +74,6 @@ const QuickActions: React.FC = () => {
 };
 
 // Import the Lucide React icons used in this component
-import { Truck, ArrowRight, FileText } from 'lucide-react';
-import { Person } from 'lucide-react';
+import { Truck, ArrowRight, FileText, UserPlus } from 'lucide-react';
 
 export default QuickActions;
