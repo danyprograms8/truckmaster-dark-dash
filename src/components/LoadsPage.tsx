@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -220,7 +219,7 @@ const LoadsPage: React.FC = () => {
       </div>
       
       {countInconsistency && (
-        <Alert variant="warning" className="mb-4 bg-amber-900/20 text-amber-300 border-amber-700">
+        <Alert variant="destructive" className="mb-4 bg-amber-900/20 text-amber-300 border-amber-700">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Status count inconsistency detected. Please check the diagnostics page or refresh the data.
