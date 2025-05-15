@@ -21,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import MonthYearSelector from './MonthYearSelector';
 import { isWithinInterval, startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { formatLocation, formatDateMMDDYYYY, formatTime } from '@/lib/locationUtils';
 
 const LoadsPage: React.FC = () => {
   const { loads, isLoading, refreshData } = useData();
@@ -183,11 +184,13 @@ const LoadsPage: React.FC = () => {
         }
       }
       
-      // Search term filtering
+      // Search term filtering - include pickup and delivery locations
       return (
         load.load_id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
         load.broker_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        load.broker_load_number?.toLowerCase().includes(searchTerm.toLowerCase())
+        load.broker_load_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (load.pickup_city && load.pickup_city.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (load.delivery_city && load.delivery_city.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     });
   }, [localLoads, statusFilter, searchTerm, selectedMonth, isLoadActiveInMonth]);
@@ -382,6 +385,10 @@ const LoadsPage: React.FC = () => {
                   <TableHead>Broker</TableHead>
                   <TableHead>Broker Load #</TableHead>
                   <TableHead>Type</TableHead>
+                  <TableHead>Pickup Location</TableHead>
+                  <TableHead>Pickup Date</TableHead>
+                  <TableHead>Delivery Location</TableHead>
+                  <TableHead>Delivery Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Rate</TableHead>
                   <TableHead>Driver</TableHead>
@@ -399,6 +406,48 @@ const LoadsPage: React.FC = () => {
                       <TableCell>{load.broker_name || 'N/A'}</TableCell>
                       <TableCell>{load.broker_load_number || 'N/A'}</TableCell>
                       <TableCell>{load.load_type || 'N/A'}</TableCell>
+                      <TableCell className={!load.pickup_city && !load.pickup_state ? 'text-gray-500' : ''}>
+                        {formatLocation(load.pickup_city, load.pickup_state)}
+                      </TableCell>
+                      <TableCell className={!load.pickup_date ? 'text-gray-500' : ''}>
+                        {load.pickup_date ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger className="cursor-default">
+                                {formatDateMMDDYYYY(load.pickup_date)}
+                              </TooltipTrigger>
+                              {load.pickup_time && (
+                                <TooltipContent>
+                                  <p>Time: {formatTime(load.pickup_time)}</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          "TBD"
+                        )}
+                      </TableCell>
+                      <TableCell className={!load.delivery_city && !load.delivery_state ? 'text-gray-500' : ''}>
+                        {formatLocation(load.delivery_city, load.delivery_state)}
+                      </TableCell>
+                      <TableCell className={!load.delivery_date ? 'text-gray-500' : ''}>
+                        {load.delivery_date ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger className="cursor-default">
+                                {formatDateMMDDYYYY(load.delivery_date)}
+                              </TooltipTrigger>
+                              {load.delivery_time && (
+                                <TooltipContent>
+                                  <p>Time: {formatTime(load.delivery_time)}</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          "TBD"
+                        )}
+                      </TableCell>
                       <TableCell>
                         <StatusDropdown 
                           loadId={load.load_id} 
@@ -424,7 +473,7 @@ const LoadsPage: React.FC = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="py-6 text-center text-gray-400">
+                    <TableCell colSpan={12} className="py-6 text-center text-gray-400">
                       {searchTerm 
                         ? 'No loads found matching your search criteria' 
                         : selectedMonth 

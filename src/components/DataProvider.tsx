@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { toast } from "@/components/ui/use-toast";
@@ -17,6 +16,14 @@ interface Load {
   temperature?: string;
   created_at?: string;
   updated_at?: string;
+  pickup_city?: string;
+  pickup_state?: string;
+  pickup_date?: string;
+  pickup_time?: string;
+  delivery_city?: string;
+  delivery_state?: string;
+  delivery_date?: string;
+  delivery_time?: string;
 }
 
 interface Driver {
@@ -109,21 +116,82 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     return date.toISOString().split('T')[0];
   };
 
-  // Fetch all loads
+  // Fetch all loads with pickup and delivery information
   const fetchLoads = async () => {
     try {
-      const { data, error } = await supabase
+      // First fetch basic load information
+      const { data: loadsData, error: loadsError } = await supabase
         .from('loads')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (loadsError) throw loadsError;
+      if (!loadsData) return [];
       
-      // Normalize statuses before returning (convert any 'active' to 'in_transit')
-      return data ? data.map(load => ({
-        ...load,
-        status: normalizeStatus(load.status)
-      })) : [];
+      // Fetch first pickup location for each load
+      const { data: pickupData, error: pickupError } = await supabase
+        .from('pickup_locations')
+        .select('load_id, city, state, pickup_date, pickup_time')
+        .eq('sequence', 1);
+      
+      if (pickupError) throw pickupError;
+      
+      // Create a map of load_id to pickup location for easy lookup
+      const pickupMap: Record<string, any> = {};
+      if (pickupData) {
+        pickupData.forEach(pickup => {
+          pickupMap[pickup.load_id] = pickup;
+        });
+      }
+      
+      // Fetch last delivery location for each load
+      const deliveryPromises = loadsData.map(async (load) => {
+        // Get the delivery location with highest sequence number for this load
+        const { data: deliveryData, error: deliveryError } = await supabase
+          .from('delivery_locations')
+          .select('load_id, city, state, delivery_date, delivery_time, sequence')
+          .eq('load_id', load.load_id)
+          .order('sequence', { ascending: false })
+          .limit(1);
+        
+        if (deliveryError) {
+          console.error('Error fetching delivery location:', deliveryError);
+          return null;
+        }
+        
+        return deliveryData?.[0] || null;
+      });
+      
+      const deliveryResults = await Promise.all(deliveryPromises);
+      
+      // Create a map of load_id to delivery location for easy lookup
+      const deliveryMap: Record<string, any> = {};
+      deliveryResults.forEach(delivery => {
+        if (delivery) {
+          deliveryMap[delivery.load_id] = delivery;
+        }
+      });
+      
+      // Combine load data with pickup and delivery information
+      const enhancedLoads = loadsData.map(load => {
+        const pickup = pickupMap[load.load_id];
+        const delivery = deliveryMap[load.load_id];
+        
+        return {
+          ...load,
+          status: normalizeStatus(load.status),
+          pickup_city: pickup?.city,
+          pickup_state: pickup?.state,
+          pickup_date: pickup?.pickup_date,
+          pickup_time: pickup?.pickup_time,
+          delivery_city: delivery?.city,
+          delivery_state: delivery?.state,
+          delivery_date: delivery?.delivery_date,
+          delivery_time: delivery?.delivery_time,
+        };
+      });
+      
+      return enhancedLoads;
     } catch (error) {
       console.error('Error fetching loads:', error);
       return [];
