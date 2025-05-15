@@ -95,11 +95,11 @@ const Navigation: React.FC = () => {
         </div>
 
         {/* Navigation Links */}
-        <nav className="px-3 py-6 space-y-6">
+        <nav className="px-3 py-6 space-y-8">
           {navGroups.map((group, groupIndex) => (
-            <div key={groupIndex} className="space-y-1">
+            <div key={groupIndex} className="space-y-2">
               {group.label && (
-                <h2 className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                <h2 className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
                   {group.label}
                 </h2>
               )}
@@ -115,15 +115,15 @@ const Navigation: React.FC = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={({ isActive }) => 
                       cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800 relative group",
-                        isActive ? "bg-truckmaster-purple/20 text-white font-medium before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-truckmaster-purple before:rounded-r" : ""
+                        "flex items-center gap-3 px-4 py-3.5 rounded-md transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800/70 relative group",
+                        isActive ? "bg-truckmaster-purple/20 text-white font-medium before:absolute before:left-0 before:top-0 before:h-full before:w-1.5 before:bg-truckmaster-purple before:rounded-r" : ""
                       )
                     }
                   >
-                    <span className={`transition-transform duration-200 ${isActive ? 'text-truckmaster-purple' : 'text-gray-400 group-hover:text-white'}`}>
+                    <span className={`transition-transform duration-200 ${isActive ? 'text-truckmaster-purple scale-105' : 'text-gray-400 group-hover:text-white'}`}>
                       {item.icon}
                     </span>
-                    <span>{item.label}</span>
+                    <span className="font-medium">{item.label}</span>
                     
                     {item.badge && (
                       <span className="ml-auto bg-truckmaster-red text-white text-xs font-medium px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
@@ -135,7 +135,7 @@ const Navigation: React.FC = () => {
               })}
               
               {groupIndex < navGroups.length - 1 && (
-                <Separator className="my-3 bg-gray-800/50" />
+                <Separator className="my-5 bg-gray-800/50" />
               )}
             </div>
           ))}
@@ -143,8 +143,6 @@ const Navigation: React.FC = () => {
 
         {/* User Info */}
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-800/30">
-          <Separator className="mb-4 bg-gray-800/50" />
-          
           <div className="flex flex-col space-y-4">
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10 border border-gray-700/50">
@@ -163,7 +161,7 @@ const Navigation: React.FC = () => {
             
             <Button 
               variant="ghost" 
-              className="flex items-center w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800/80 px-3 py-2 transition-colors duration-200" 
+              className="flex items-center justify-start text-gray-300 hover:text-white hover:bg-gray-800/80 px-3 py-2 transition-colors duration-200 w-fit" 
               onClick={handleLogout}
             >
               <LogOut size={18} className="mr-2" />

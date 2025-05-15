@@ -62,16 +62,16 @@
   }
 
   .glass-card {
-    @apply bg-black/20 backdrop-blur-sm border-none shadow-lg;
+    @apply bg-black/20 backdrop-blur-sm shadow-lg border-none;
   }
   
   .card-hover {
     @apply transition-all duration-300 hover:bg-truckmaster-purple/10 hover:border-truckmaster-purple/30;
   }
   
-  /* Added navigation animation utilities */
+  /* Navigation animation utilities */
   .nav-item-active {
-    @apply relative before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-truckmaster-purple before:rounded-r;
+    @apply relative before:absolute before:left-0 before:top-0 before:h-full before:w-1.5 before:bg-truckmaster-purple before:rounded-r;
   }
   
   .nav-icon {
@@ -80,5 +80,10 @@
   
   .nav-icon-hover {
     @apply hover:scale-110;
+  }
+  
+  /* Add hover effect for nav items */
+  .nav-item-hover {
+    @apply transition-all duration-200 hover:bg-gray-800/60;
   }
 }

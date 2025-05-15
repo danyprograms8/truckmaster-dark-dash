@@ -60,7 +60,7 @@ const Sidebar: React.FC = () => {
       </div>
       
       <nav className="mt-8 px-4 flex-1">
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {sidebarLinks.map((link) => {
             const isActive = currentPath === link.path;
             return (
@@ -68,13 +68,13 @@ const Sidebar: React.FC = () => {
                 <Link 
                   to={link.path}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-4 py-3.5 rounded-md text-sm font-medium transition-all duration-200",
                     isActive 
-                      ? "bg-truckmaster-purple text-white" 
-                      : "text-gray-400 hover:text-white hover:bg-white/10"
+                      ? "bg-truckmaster-purple text-white nav-item-active" 
+                      : "text-gray-400 hover:text-white nav-item-hover"
                   )}
                 >
-                  <link.icon className="h-5 w-5" />
+                  <link.icon className={cn("h-5 w-5 nav-icon", isActive ? "text-white" : "text-gray-400")} />
                   <span>{link.title}</span>
                 </Link>
               </li>
@@ -83,7 +83,7 @@ const Sidebar: React.FC = () => {
         </ul>
       </nav>
       
-      <div className="p-4 bg-truckmaster-darker mt-auto">
+      <div className="p-4 bg-truckmaster-darker mt-auto border-t border-gray-800/30">
         <div className="flex items-center gap-3 mb-4">
           <div className="h-8 w-8 rounded-full bg-truckmaster-gray-dark flex items-center justify-center text-white font-medium">
             TU
