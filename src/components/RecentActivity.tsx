@@ -6,7 +6,7 @@ import { formatActivity, formatTimeAgo } from '@/lib/loadStatusUtils';
 
 interface Activity {
   activity_id: number;
-  activity_type: 'status_change' | 'note';
+  activity_type: string; // Changed from '"status_change" | "note"' to 'string'
   load_id: string;
   previous_status?: string;
   new_status?: string;
@@ -24,9 +24,12 @@ const RecentActivity: React.FC = () => {
     // Convert the recentActivity from DataProvider to our Activity type
     if (recentActivity) {
       const formattedActivities = recentActivity.map(item => ({
-        activity_id: item.note_id || 0,
-        activity_type: item.note_type === 'general' ? 'note' : 'status_change',
+        activity_id: item.note_id || item.activity_id || 0,
+        activity_type: item.note_type === 'general' ? 'note' : (item.activity_type || 'status_change'),
         load_id: item.load_id || '',
+        previous_status: item.previous_status,
+        new_status: item.new_status,
+        changed_by: item.changed_by,
         note_text: item.note_text,
         created_at: item.created_at || new Date().toISOString(),
         broker_load_number: item.broker_load_number
@@ -97,7 +100,7 @@ const RecentActivity: React.FC = () => {
         {recentActivity.length > 0 ? (
           recentActivity.map((activity) => (
             <div 
-              key={`${activity.note_id || ''}-${activity.created_at}`} 
+              key={`${activity.note_id || activity.activity_id || ''}-${activity.created_at}`} 
               className="flex items-start pb-4 border-b border-white/5 last:border-0 last:pb-0"
             >
               <div className="h-2 w-2 mt-2 rounded-full bg-truckmaster-purple mr-3 flex-shrink-0" />
@@ -105,7 +108,7 @@ const RecentActivity: React.FC = () => {
                 <p className="text-sm text-white">
                   {activity.note_text ? 
                     `Note on Load #${activity.load_id || activity.broker_load_number}: ${activity.note_text}` : 
-                    `Status change on Load #${activity.load_id || activity.broker_load_number}`
+                    `Status change on Load #${activity.load_id || activity.broker_load_number}: ${activity.previous_status} → ${activity.new_status}`
                   }
                 </p>
                 <span className="text-xs text-truckmaster-gray-light">
