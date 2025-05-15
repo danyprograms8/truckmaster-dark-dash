@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { toast } from "@/components/ui/use-toast";
+import { isInTransitStatus, normalizeStatus } from '@/lib/loadStatusUtils';
 
 // Define types for our context data
 interface Load {
@@ -117,7 +118,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      
+      // Normalize statuses before returning (convert any 'active' to 'in_transit')
+      return data ? data.map(load => ({
+        ...load,
+        status: normalizeStatus(load.status)
+      })) : [];
     } catch (error) {
       console.error('Error fetching loads:', error);
       return [];
@@ -237,15 +243,15 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   // Calculate metrics
   const calculateMetrics = (loads: Load[], drivers: Driver[]) => {
-    const activeLoads = loads.filter(load => 
-      ['active', 'booked', 'assigned', 'in_transit'].includes(load.status.toLowerCase())
+    const inTransitLoads = loads.filter(load => 
+      isInTransitStatus(load.status)
     ).length;
     
     const availableDrivers = drivers.filter(driver => 
       driver.status?.toLowerCase() === 'active'
     ).length;
     
-    return { activeLoads, availableDrivers };
+    return { activeLoads: inTransitLoads, availableDrivers };
   };
 
   // Main function to fetch all data

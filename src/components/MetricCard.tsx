@@ -1,6 +1,13 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { 
+  Tooltip, 
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
+import { InfoIcon } from 'lucide-react';
 
 interface MetricCardProps {
   title: string;
@@ -12,7 +19,8 @@ interface MetricCardProps {
   };
   className?: string;
   color?: string;
-  suffix?: React.ReactNode; // We'll keep this prop but not use it for the Available Trucks card
+  suffix?: React.ReactNode;
+  "title-tooltip"?: string; // Optional tooltip text for the title
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({ 
@@ -22,7 +30,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
   trend, 
   className,
   color,
-  suffix // Keep this in the props
+  suffix,
+  "title-tooltip": titleTooltip
 }) => {
   return (
     <div className={cn(
@@ -31,7 +40,21 @@ const MetricCard: React.FC<MetricCardProps> = ({
     )}>
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-sm text-truckmaster-gray-light mb-1">{title}</p>
+          <p className="text-sm text-truckmaster-gray-light mb-1 flex items-center">
+            {title}
+            {titleTooltip && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <InfoIcon className="h-3 w-3 ml-1 text-truckmaster-gray-light cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">{titleTooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </p>
           <h3 className="text-2xl font-bold text-white">{value}</h3>
           {trend && (
             <span className={cn(

@@ -35,7 +35,8 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
 
   // Sync local state when currentStatus prop changes
   useEffect(() => {
-    // Use normalizeStatus to ensure consistent format
+    // Use normalizeStatus to ensure consistent format 
+    // This will also convert any 'active' status to 'in_transit'
     const normalized = normalizeStatus(currentStatus) as LoadStatus;
     console.log(`StatusDropdown: setting normalized status for load ${loadId}: "${currentStatus}" -> "${normalized}"`);
     setStatus(normalized);

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +11,10 @@ import {
   LoadStatus, 
   statusOptions, 
   getStatusColor, 
-  isActiveStatus, 
   isInTransitStatus, 
   formatStatusLabel,
-  normalizeStatus
+  normalizeStatus,
+  migrateActiveStatusToInTransit
 } from '@/lib/loadStatusUtils';
 import LoadDetailsDrawer from './LoadDetailsDrawer';
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +32,25 @@ const LoadsPage: React.FC = () => {
   const [updatingLoadIds, setUpdatingLoadIds] = useState<string[]>([]);
   const [countInconsistency, setCountInconsistency] = useState(false);
   const { toast } = useToast();
+  
+  // Run migration from Active to In Transit on first load
+  useEffect(() => {
+    const runMigration = async () => {
+      const result = await migrateActiveStatusToInTransit();
+      if (result.success && result.count > 0) {
+        toast({
+          title: "Status Migration Complete",
+          description: `${result.count} loads updated from Active to In Transit status`,
+          duration: 5000,
+        });
+        
+        // Refresh data to show updated statuses
+        refreshData();
+      }
+    };
+    
+    runMigration();
+  }, []);
   
   // Initialize localLoads with loads from DataProvider
   useEffect(() => {

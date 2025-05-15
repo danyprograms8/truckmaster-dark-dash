@@ -1,16 +1,14 @@
-
 import { supabase } from './supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
-export type LoadStatus = 'booked' | 'in_transit' | 'delivered' | 'completed' | 'cancelled' | 'active';
+export type LoadStatus = 'booked' | 'in_transit' | 'delivered' | 'completed' | 'cancelled';
 
 export const statusOptions: { value: LoadStatus, label: string }[] = [
   { value: 'booked', label: 'Booked' },
   { value: 'in_transit', label: 'In Transit' },
   { value: 'delivered', label: 'Delivered' },
   { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
-  { value: 'active', label: 'Active' }
+  { value: 'cancelled', label: 'Cancelled' }
 ];
 
 export const getStatusColor = (status: string): string => {
@@ -18,8 +16,6 @@ export const getStatusColor = (status: string): string => {
   const normalizedStatus = normalizeStatus(status);
   
   switch (normalizedStatus) {
-    case 'active':
-      return 'bg-green-900 text-green-300';
     case 'in_transit':
       return 'bg-blue-500 text-white';
     case 'booked':
@@ -35,15 +31,7 @@ export const getStatusColor = (status: string): string => {
   }
 };
 
-// This helper function returns true if a status is considered "active"
-// IMPORTANT: We've changed this to ONLY include loads with exactly 'active' status
-// and NOT include 'in_transit' loads as active
-export const isActiveStatus = (status: string): boolean => {
-  const normalizedStatus = normalizeStatus(status);
-  return normalizedStatus === 'active';
-};
-
-// This helper function returns true if a status is "in_transit"
+// This helper function returns true if a status is considered "in transit"
 export const isInTransitStatus = (status: string): boolean => {
   const normalizedStatus = normalizeStatus(status);
   return normalizedStatus === 'in_transit';
@@ -59,6 +47,12 @@ export const normalizeStatus = (status: string): string => {
   // Handle special cases for "in transit" format variations
   if (lowercaseStatus === 'in_transit' || lowercaseStatus === 'in transit' || 
       lowercaseStatus === 'intransit' || lowercaseStatus === 'in-transit') {
+    return 'in_transit';
+  }
+  
+  // Convert legacy "active" status to "in_transit"
+  if (lowercaseStatus === 'active') {
+    console.log("Converting legacy 'active' status to 'in_transit'");
     return 'in_transit';
   }
   
@@ -111,9 +105,7 @@ export const getLoadCountsByStatus = async (): Promise<Record<string, number>> =
       const normalizedStatus = normalizeStatus(load.status);
       
       // Count for specific normalized statuses
-      if (normalizedStatus === 'active') {
-        counts['active'] = (counts['active'] || 0) + 1;
-      } else if (normalizedStatus === 'in_transit') {
+      if (normalizedStatus === 'in_transit') {
         counts['in_transit'] = (counts['in_transit'] || 0) + 1;
       } else if (normalizedStatus === 'booked') {
         counts['booked'] = (counts['booked'] || 0) + 1;
@@ -175,7 +167,11 @@ export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): P
 // Format activity for display
 export const formatActivity = (activity: any): string => {
   if (activity.activity_type === 'status_change') {
-    return `Load #${activity.load_id} changed from ${formatStatusLabel(activity.previous_status)} to ${formatStatusLabel(activity.new_status)}`;
+    // Handle legacy "Active" status in activity logs
+    let previousStatus = activity.previous_status === 'Active' ? 'In Transit' : formatStatusLabel(activity.previous_status);
+    let newStatus = activity.new_status === 'Active' ? 'In Transit' : formatStatusLabel(activity.new_status);
+    
+    return `Load #${activity.load_id} changed from ${previousStatus} to ${newStatus}`;
   } else if (activity.note_text) {
     return activity.note_text;
   }
@@ -201,5 +197,45 @@ export const formatTimeAgo = (dateString: string): string => {
   } else {
     const days = Math.floor(diffInSeconds / 86400);
     return `${days} days ago`;
+  }
+};
+
+// Run a cleanup to convert all Active statuses to In Transit
+export const migrateActiveStatusToInTransit = async (): Promise<{ success: boolean, count: number }> => {
+  try {
+    // Find all loads with Active status
+    const { data, error: selectError } = await supabase
+      .from('loads')
+      .select('load_id, status')
+      .eq('status', 'Active');
+    
+    if (selectError) {
+      console.error('Error finding Active loads:', selectError);
+      return { success: false, count: 0 };
+    }
+    
+    if (!data || data.length === 0) {
+      console.log('No Active loads found to migrate');
+      return { success: true, count: 0 };
+    }
+    
+    console.log(`Found ${data.length} loads with Active status to migrate`);
+    
+    // Update all of them to In Transit
+    const { error: updateError } = await supabase
+      .from('loads')
+      .update({ status: 'in_transit' })
+      .eq('status', 'Active');
+    
+    if (updateError) {
+      console.error('Error updating Active loads:', updateError);
+      return { success: false, count: 0 };
+    }
+    
+    console.log(`Successfully migrated ${data.length} loads from Active to In Transit`);
+    return { success: true, count: data.length };
+  } catch (error) {
+    console.error('Exception migrating Active to In Transit status:', error);
+    return { success: false, count: 0 };
   }
 };

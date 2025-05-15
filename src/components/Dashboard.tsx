@@ -9,13 +9,14 @@ import QuickActions from '@/components/QuickActions';
 import MetricCard from '@/components/MetricCard';
 import TruckList from '@/components/TruckList';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { isInTransitStatus } from '@/lib/loadStatusUtils';
 
 const Dashboard: React.FC = () => {
   const { loads, drivers, isLoading, dashboardMetrics } = useData();
   const [isTruckModalOpen, setIsTruckModalOpen] = useState(false);
   
   // Calculate metrics
-  const activeLoads = loads.filter(load => ['active', 'booked', 'assigned', 'in_transit'].includes(load.status.toLowerCase())).length;
+  const inTransitLoads = loads.filter(load => isInTransitStatus(load.status)).length;
   const availableTrucks = drivers.filter(driver => driver.status?.toLowerCase() === 'active').length;
   
   // Get metrics from the dashboardMetrics object
@@ -50,10 +51,11 @@ const Dashboard: React.FC = () => {
         </div>
         
         <MetricCard 
-          title="Active Loads" 
-          value={activeLoads} 
+          title="In Transit Loads" 
+          value={inTransitLoads} 
           icon={<Users className="h-6 w-6" />} 
           color="bg-blue-500" 
+          title-tooltip="Loads currently being transported"
         />
         <MetricCard 
           title="Today's Pickups" 
