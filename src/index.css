@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -148,6 +147,32 @@
   /* Remove borders from all elements */
   div, section, article, aside, nav, header, footer, main {
     border: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Fix for bottom line specifically */
+  body::after,
+  #root::after,
+  #root > div::after,
+  main::after,
+  footer::after,
+  .layout-container::after {
+    display: none !important;
+    content: none !important;
+  }
+  
+  /* Add padding at the bottom to push content above any potential line */
+  body {
+    padding-bottom: 2px !important;
+  }
+  
+  /* Target any injected elements */
+  body > div:not(#root),
+  body > iframe,
+  body > div[style*="position: fixed"],
+  body > div[style*="bottom: 0"] {
+    border-top: none !important;
+    outline: none !important;
     box-shadow: none !important;
   }
 }

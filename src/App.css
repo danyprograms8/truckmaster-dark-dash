@@ -104,3 +104,23 @@ hr.frame-divider {
   opacity: 0 !important;
   display: none !important;
 }
+
+/* Additional fixes for bottom line */
+html::after, 
+body::after, 
+#root::after,
+.app-root::after,
+[id*="lovable"]::after,
+[class*="lovable"]::after,
+[id*="powered-by"]::after,
+[class*="powered-by"]::after {
+  display: none !important;
+  content: none !important;
+  border: none !important;
+  height: 0 !important;
+}
+
+/* Bottom padding to push content up */
+body {
+  padding-bottom: 20px !important;
+}

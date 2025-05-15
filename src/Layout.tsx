@@ -5,12 +5,14 @@ import Navigation from './components/Navigation';
 
 const Layout: React.FC = () => {
   return (
-    <div className="flex min-h-screen bg-truckmaster-dark border-none outline-none">
+    <div className="flex min-h-screen bg-truckmaster-dark border-none outline-none overflow-hidden">
       <Navigation />
       <main className="flex-1 overflow-auto outline-none border-none bg-truckmaster-dark">
         <div className="bg-truckmaster-dark border-none box-border">
           <Outlet />
         </div>
+        {/* This empty div prevents any bottom border from appearing */}
+        <div className="h-16 bg-truckmaster-dark border-none" />
       </main>
     </div>
   );
