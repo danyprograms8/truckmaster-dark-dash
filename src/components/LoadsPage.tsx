@@ -119,21 +119,18 @@ const LoadsTable: React.FC = () => {
         </Button>
         
         {statusOptions.map(status => (
-          // Skip the 'assigned' status when rendering filter buttons
-          status.value !== 'assigned' && (
-            <Button 
-              key={status.value}
-              variant={statusFilter === status.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter(status.value)}
-              className={`${statusFilter === status.value ? '' : 'bg-opacity-20'}`}
-            >
-              {status.label} 
-              <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
-                {loadCounts[status.value] || 0}
-              </span>
-            </Button>
-          )
+          <Button 
+            key={status.value}
+            variant={statusFilter === status.value ? "default" : "outline"}
+            size="sm"
+            onClick={() => setStatusFilter(status.value)}
+            className={`${statusFilter === status.value ? '' : 'bg-opacity-20'}`}
+          >
+            {status.label} 
+            <span className="ml-1 text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
+              {loadCounts[status.value] || 0}
+            </span>
+          </Button>
         ))}
       </div>
       
