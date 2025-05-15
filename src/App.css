@@ -113,14 +113,42 @@ body::after,
 [id*="lovable"]::after,
 [class*="lovable"]::after,
 [id*="powered-by"]::after,
-[class*="powered-by"]::after {
+[class*="powered-by"]::after,
+[class*="badge"]::after,
+[class*="badge"],
+[id*="badge"],
+[class*="overlay"],
+[id*="overlay"] {
   display: none !important;
   content: none !important;
   border: none !important;
   height: 0 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
-/* Bottom padding to push content up */
-body {
-  padding-bottom: 20px !important;
+/* Extended targeting for bottom overlay */
+body::before,
+#root::before,
+body > div::before,
+#root > div::before,
+body > div::after,
+#root > div::after,
+iframe[style*="bottom"],
+div[style*="bottom:0"],
+div[style*="position:fixed"],
+div[style*="position: fixed"],
+div[style*="z-index:"],
+div[style*="z-index: "] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Force the body to fill the viewport without any bottom safe area */
+html, body, #root {
+  min-height: 100vh !important;
+  overflow-x: hidden;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
 }

@@ -170,10 +170,48 @@
   body > div:not(#root),
   body > iframe,
   body > div[style*="position: fixed"],
-  body > div[style*="bottom: 0"] {
-    border-top: none !important;
+  body > div[style*="bottom: 0"],
+  body > div[style*="bottom:0"],
+  body > *[class*="badge"],
+  body > *[id*="badge"],
+  body > *[class*="overlay"],
+  body > *[id*="overlay"],
+  body > *[class*="lovable"],
+  body > *[id*="lovable"] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    border: none !important;
     outline: none !important;
     box-shadow: none !important;
+  }
+  
+  /* Ensure the viewport fills the entire screen */
+  html, body {
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+  
+  #root {
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden;
+  }
+  
+  /* Override any potential sticky footers */
+  div[style*="position: sticky"],
+  div[style*="position:sticky"],
+  footer, 
+  .footer, 
+  [class*="footer"] {
+    position: relative !important;
+    bottom: auto !important;
+    margin-top: auto !important;
+    border-top: none !important;
   }
 }
 

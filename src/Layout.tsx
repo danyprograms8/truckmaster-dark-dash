@@ -11,8 +11,6 @@ const Layout: React.FC = () => {
         <div className="bg-truckmaster-dark border-none box-border">
           <Outlet />
         </div>
-        {/* This empty div prevents any bottom border from appearing */}
-        <div className="h-16 bg-truckmaster-dark border-none" />
       </main>
     </div>
   );
