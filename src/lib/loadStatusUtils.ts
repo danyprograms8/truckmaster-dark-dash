@@ -17,13 +17,12 @@ export const statusOptions: { value: LoadStatus, label: string }[] = [
 export const getStatusColor = (status: string): string => {
   switch (status?.toLowerCase()) {
     case 'active':
+    case 'in_transit':
       return 'bg-green-900 text-green-300';
     case 'booked':
       return 'bg-blue-900 text-blue-300';
     case 'assigned':
       return 'bg-purple-900 text-purple-300';
-    case 'in_transit':
-      return 'bg-amber-900 text-amber-300';
     case 'delivered':
       return 'bg-teal-900 text-teal-300';
     case 'completed':
@@ -35,12 +34,28 @@ export const getStatusColor = (status: string): string => {
   }
 };
 
+// This helper function returns true if a status is considered "active"
+export const isActiveStatus = (status: string): boolean => {
+  return status?.toLowerCase() === 'active' || status?.toLowerCase() === 'in_transit';
+};
+
+// Format status for display (proper capitalization and spacing)
+export const formatStatusLabel = (status: string): string => {
+  if (!status) return '';
+  
+  if (status.toLowerCase() === 'in_transit') {
+    return 'In Transit';
+  }
+  
+  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+};
+
 export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): Promise<boolean> => {
   try {
     // Show toast indicating status update in progress
     const loadingToast = toast({
       title: "Updating Status",
-      description: `Changing load #${loadId} status to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}...`,
+      description: `Changing load #${loadId} status to ${formatStatusLabel(newStatus)}...`,
     });
     
     // Update the load status in the database
@@ -63,7 +78,7 @@ export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): P
     // Show success toast
     toast({
       title: "Status Updated",
-      description: `Load #${loadId} status changed to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`,
+      description: `Load #${loadId} status changed to ${formatStatusLabel(newStatus)}`,
     });
     
     return true;
@@ -81,7 +96,7 @@ export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): P
 // Format activity for display
 export const formatActivity = (activity: any): string => {
   if (activity.activity_type === 'status_change') {
-    return `Load #${activity.load_id} changed from ${activity.previous_status} to ${activity.new_status}`;
+    return `Load #${activity.load_id} changed from ${formatStatusLabel(activity.previous_status)} to ${formatStatusLabel(activity.new_status)}`;
   } else if (activity.note_text) {
     return activity.note_text;
   }

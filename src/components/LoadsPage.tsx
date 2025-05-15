@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Search, Filter } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import StatusDropdown from './StatusDropdown';
-import { LoadStatus, statusOptions, getStatusColor } from '@/lib/loadStatusUtils';
+import { LoadStatus, statusOptions, getStatusColor, isActiveStatus, formatStatusLabel } from '@/lib/loadStatusUtils';
 
 const LoadsTable: React.FC = () => {
   const { loads, isLoading, refreshData } = useData();
@@ -29,18 +29,34 @@ const LoadsTable: React.FC = () => {
     );
   }, []);
   
-  const filteredLoads = localLoads.filter(load => 
-    (statusFilter === 'all' || load.status === statusFilter) && 
-    (load.load_id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-     load.broker_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     load.broker_load_number?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredLoads = localLoads.filter(load => {
+    // Special handling for "active" filter to include both "active" and "in_transit"
+    if (statusFilter === 'active') {
+      if (!isActiveStatus(load.status)) {
+        return false;
+      }
+    } else if (statusFilter !== 'all' && load.status !== statusFilter) {
+      return false;
+    }
+    
+    // Search term filtering
+    return (
+      load.load_id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      load.broker_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      load.broker_load_number?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
 
   // Maintain counts of loads by status
   const loadCounts = {
     all: localLoads.length,
     ...statusOptions.reduce((acc, option) => {
-      acc[option.value] = localLoads.filter(load => load.status === option.value).length;
+      // For "active" status, count both "active" and "in_transit"
+      if (option.value === 'active') {
+        acc[option.value] = localLoads.filter(load => isActiveStatus(load.status)).length;
+      } else {
+        acc[option.value] = localLoads.filter(load => load.status === option.value).length;
+      }
       return acc;
     }, {} as Record<string, number>)
   };
@@ -108,7 +124,7 @@ const LoadsTable: React.FC = () => {
           <CardTitle>
             {statusFilter === 'all' 
               ? 'All Loads' 
-              : `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Loads`}
+              : `${formatStatusLabel(statusFilter)} Loads`}
           </CardTitle>
         </CardHeader>
         <CardContent>

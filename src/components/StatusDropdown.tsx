@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LoadStatus, statusOptions, getStatusColor, updateLoadStatus } from "@/lib/loadStatusUtils";
+import { LoadStatus, statusOptions, getStatusColor, updateLoadStatus, formatStatusLabel } from "@/lib/loadStatusUtils";
 
 interface StatusDropdownProps {
   loadId: string;
@@ -73,7 +73,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
               isUpdating && "opacity-70"
             )}
           >
-            <span className="capitalize">{status || 'Unknown'}</span>
+            <span>{formatStatusLabel(status) || 'Unknown'}</span>
             {open ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
             {isUpdating && (
               <span className="ml-2 h-3 w-3 rounded-full animate-pulse bg-white/30"></span>
