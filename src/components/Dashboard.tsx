@@ -41,23 +41,25 @@ const Dashboard: React.FC = () => {
           title="Active Loads" 
           value={activeLoads} 
           icon={<Truck className="h-6 w-6" />} 
-          trend={{ value: 8, isPositive: true }}
+          color="bg-blue-500" 
         />
         <MetricCard 
           title="Available Drivers" 
           value={availableDrivers} 
           icon={<Users className="h-6 w-6" />} 
-          trend={{ value: 2, isPositive: false }}
+          color="bg-green-500" 
         />
         <MetricCard 
           title="Today's Pickups" 
           value={todayPickups} 
           icon={<Calendar className="h-6 w-6" />} 
+          color="bg-amber-500" 
         />
         <MetricCard 
           title="Today's Deliveries" 
           value={todayDeliveries} 
           icon={<CheckCircle className="h-6 w-6" />} 
+          color="bg-purple-500" 
         />
       </div>
       
