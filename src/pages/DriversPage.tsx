@@ -1,16 +1,16 @@
 
 import React from 'react';
+import { DataProvider } from '@/components/DataProvider';
+import DriversPage from '@/components/DriversPage';
 import Header from '@/components/Header';
 
-const DriversPage: React.FC = () => {
+const DriversPageWrapper: React.FC = () => {
   return (
     <div className="p-6">
       <Header title="Drivers" subtitle="Manage your drivers" />
-      <div className="bg-truckmaster-card-bg p-5 rounded-lg border border-white/5">
-        <p className="text-truckmaster-gray-light">Drivers page content will go here.</p>
-      </div>
+      <DriversPage />
     </div>
   );
 };
 
-export default DriversPage;
+export default DriversPageWrapper;
