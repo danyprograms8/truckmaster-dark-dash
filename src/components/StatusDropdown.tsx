@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LoadStatus, statusOptions, getStatusColor, updateLoadStatus, formatStatusLabel } from "@/lib/loadStatusUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface StatusDropdownProps {
   loadId: string;
@@ -23,6 +24,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
   const [isUpdating, setIsUpdating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [optimisticStatus, setOptimisticStatus] = useState<LoadStatus | null>(null);
+  const { toast } = useToast();
 
   // Sync local state when currentStatus prop changes
   useEffect(() => {
@@ -62,6 +64,13 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
         if (onStatusChange) {
           onStatusChange(previousStatus);
         }
+        
+        toast({
+          title: "Status update failed",
+          description: "The status could not be updated. Please try again.",
+          variant: "destructive",
+          duration: 3000,
+        });
       }
     } catch (error) {
       console.error('Error updating status:', error);
@@ -71,6 +80,13 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
       if (onStatusChange) {
         onStatusChange(previousStatus);
       }
+      
+      toast({
+        title: "Status update failed",
+        description: "An error occurred while updating the status.",
+        variant: "destructive",
+        duration: 3000,
+      });
     } finally {
       setIsUpdating(false);
       setOpen(false);

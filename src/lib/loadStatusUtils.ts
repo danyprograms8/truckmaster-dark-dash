@@ -1,3 +1,4 @@
+
 import { supabase } from './supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
@@ -48,8 +49,6 @@ export const formatStatusLabel = (status: string): string => {
 
 export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): Promise<boolean> => {
   try {
-    // No toast notification here for load status updates - handled by optimistic UI
-    
     // Update the load status in the database
     const { error } = await supabase
       .from('loads')
@@ -59,23 +58,12 @@ export const updateLoadStatus = async (loadId: string, newStatus: LoadStatus): P
     // Handle errors if any
     if (error) {
       console.error('Error updating load status:', error);
-      toast({
-        title: "Error",
-        description: `Failed to update status: ${error.message}`,
-        variant: "destructive",
-      });
       return false;
     }
 
-    // No success toast notification anymore - keeping the UI clean
     return true;
   } catch (error) {
     console.error('Exception updating load status:', error);
-    toast({
-      title: "Error",
-      description: "An unexpected error occurred",
-      variant: "destructive",
-    });
     return false;
   }
 };

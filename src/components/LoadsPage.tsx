@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useData } from './DataProvider';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import StatusDropdown from './StatusDropdown';
 import { LoadStatus, statusOptions, getStatusColor, isActiveStatus, formatStatusLabel } from '@/lib/loadStatusUtils';
 import LoadDetailsDrawer from './LoadDetailsDrawer';
+import { useToast } from "@/hooks/use-toast";
 
 const LoadsTable: React.FC = () => {
   const { loads, isLoading, refreshData } = useData();
@@ -19,6 +20,7 @@ const LoadsTable: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [loadDetailLoading, setLoadDetailLoading] = useState(false);
   const [updatingLoadIds, setUpdatingLoadIds] = useState<string[]>([]);
+  const { toast } = useToast();
   
   // Initialize localLoads with loads from DataProvider
   useEffect(() => {
@@ -55,37 +57,45 @@ const LoadsTable: React.FC = () => {
     }, 500);
   };
   
-  const filteredLoads = localLoads.filter(load => {
-    // Special handling for "active" filter to include both "active" and "in_transit"
-    if (statusFilter === 'active') {
-      if (!isActiveStatus(load.status)) {
+  // Filter loads based on status and search term
+  const filteredLoads = useMemo(() => {
+    return localLoads.filter(load => {
+      // Special handling for "active" filter to include both "active" and "in_transit"
+      if (statusFilter === 'active') {
+        if (!isActiveStatus(load.status)) {
+          return false;
+        }
+      } else if (statusFilter !== 'all' && load.status !== statusFilter) {
         return false;
       }
-    } else if (statusFilter !== 'all' && load.status !== statusFilter) {
-      return false;
-    }
-    
-    // Search term filtering
-    return (
-      load.load_id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      load.broker_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      load.broker_load_number?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  });
+      
+      // Search term filtering
+      return (
+        load.load_id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        load.broker_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        load.broker_load_number?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
+  }, [localLoads, statusFilter, searchTerm]);
 
   // Calculate counts of loads by status - will update automatically with localLoads
-  const loadCounts = {
-    all: localLoads.length,
-    ...statusOptions.reduce((acc, option) => {
+  const loadCounts = useMemo(() => {
+    const counts = {
+      all: localLoads.length,
+    } as Record<string, number>;
+    
+    // Calculate counts for each status option
+    statusOptions.forEach(option => {
       // For "active" status, count both "active" and "in_transit"
       if (option.value === 'active') {
-        acc[option.value] = localLoads.filter(load => isActiveStatus(load.status)).length;
+        counts[option.value] = localLoads.filter(load => isActiveStatus(load.status)).length;
       } else {
-        acc[option.value] = localLoads.filter(load => load.status === option.value).length;
+        counts[option.value] = localLoads.filter(load => load.status === option.value).length;
       }
-      return acc;
-    }, {} as Record<string, number>)
-  };
+    });
+    
+    return counts;
+  }, [localLoads]);
 
   // Add highlight class to recently updated rows
   const getRowClassName = (loadId: string) => {
@@ -93,6 +103,26 @@ const LoadsTable: React.FC = () => {
       return "bg-amber-900/20 transition-colors duration-500";
     }
     return "";
+  };
+  
+  // Force refresh loads from server
+  const handleForceRefresh = async () => {
+    try {
+      await refreshData();
+      toast({
+        title: "Data refreshed",
+        description: "Load counts have been updated from the server.",
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      toast({
+        title: "Refresh failed",
+        description: "Could not refresh load data. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
   if (isLoading) {
@@ -126,7 +156,7 @@ const LoadsTable: React.FC = () => {
         </div>
       </div>
       
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mb-6 flex flex-wrap gap-2 items-center">
         <Button 
           variant={statusFilter === 'all' ? "default" : "outline"}
           size="sm"
@@ -151,6 +181,30 @@ const LoadsTable: React.FC = () => {
             </span>
           </Button>
         ))}
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleForceRefresh}
+          className="ml-2 p-1.5 h-8 w-8"
+          title="Refresh counts"
+        >
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="16" 
+            height="16" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+            className="transition-transform hover:rotate-180 duration-500"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+        </Button>
       </div>
       
       <Card>
