@@ -60,6 +60,9 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
     }
   };
 
+  // Filter out the "assigned" status option from the dropdown
+  const filteredStatusOptions = statusOptions.filter(option => option.value !== 'assigned');
+
   return (
     <div className="relative">
       <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -81,7 +84,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ loadId, currentStatus, 
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-40 bg-gray-900 border-gray-800">
-          {statusOptions.map((option) => (
+          {filteredStatusOptions.map((option) => (
             <DropdownMenuItem 
               key={option.value}
               className={cn(

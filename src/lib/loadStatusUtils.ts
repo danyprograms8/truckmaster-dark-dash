@@ -1,12 +1,10 @@
-
 import { supabase } from './supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 
-export type LoadStatus = 'booked' | 'assigned' | 'in_transit' | 'delivered' | 'completed' | 'cancelled' | 'active';
+export type LoadStatus = 'booked' | 'in_transit' | 'delivered' | 'completed' | 'cancelled' | 'active';
 
 export const statusOptions: { value: LoadStatus, label: string }[] = [
   { value: 'booked', label: 'Booked' },
-  { value: 'assigned', label: 'Assigned' },
   { value: 'in_transit', label: 'In Transit' },
   { value: 'delivered', label: 'Delivered' },
   { value: 'completed', label: 'Completed' },
