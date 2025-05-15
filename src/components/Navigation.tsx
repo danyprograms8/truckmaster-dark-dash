@@ -58,14 +58,14 @@ const Navigation: React.FC = () => {
       {/* Sidebar for desktop and mobile (when open) */}
       <aside
         className={cn(
-          "bg-gray-900 border-r border-gray-800 min-h-screen h-full transition-all duration-300 z-40",
+          "bg-gray-900 min-h-screen h-full transition-all duration-300 z-40 shadow-none",
           isMobileMenuOpen 
             ? "fixed inset-y-0 left-0 w-64" 
             : "hidden lg:block lg:w-64 lg:min-w-64 lg:max-w-64"
         )}
       >
         {/* Logo */}
-        <div className="flex items-center h-16 px-6 border-b border-gray-800">
+        <div className="flex items-center h-16 px-6">
           <h1 className="text-xl font-bold text-white">TruckMaster</h1>
         </div>
 
@@ -95,7 +95,7 @@ const Navigation: React.FC = () => {
         </nav>
 
         {/* User Info */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800">
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gray-900">
           <div className="flex flex-col space-y-4">
             <div className="flex items-center">
               <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-2">
