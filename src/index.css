@@ -49,6 +49,26 @@
   html {
     @apply scroll-smooth;
   }
+  
+  /* Remove horizontal lines between components */
+  .card, .card-header, .card-content {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  .grid > div {
+    border: none !important;
+  }
+  
+  /* Fix for horizontal lines in dashboard */
+  .dashboard-grid-container {
+    border: none !important;
+    background: transparent !important;
+  }
+  
+  hr {
+    display: none !important;
+  }
 }
 
 @layer utilities {

@@ -7,7 +7,7 @@ const Layout: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-truckmaster-dark">
       <Navigation />
-      <main className="flex-1 overflow-auto outline-none">
+      <main className="flex-1 overflow-auto outline-none border-none">
         <Outlet />
       </main>
     </div>

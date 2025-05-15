@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from './DataProvider';
 import { Truck, Users, Calendar, CheckCircle } from 'lucide-react';
@@ -86,24 +85,24 @@ const Dashboard: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Chart and Activity Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      {/* Chart and Activity Section - with fixed styling */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 border-none">
         <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
+          <Card className="border-none shadow-none overflow-hidden box-border">
+            <CardHeader className="border-none">
               <CardTitle>Loads Booked (Last 7 Days)</CardTitle>
             </CardHeader>
-            <CardContent className="pt-2">
+            <CardContent className="pt-2 border-none">
               <LoadsChart data={loadTrend} />
             </CardContent>
           </Card>
         </div>
         <div className="lg:col-span-1">
-          <Card className="h-full">
-            <CardHeader>
+          <Card className="h-full border-none shadow-none overflow-hidden box-border">
+            <CardHeader className="border-none">
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
-            <CardContent className="pt-2">
+            <CardContent className="pt-2 border-none">
               <RecentActivity />
             </CardContent>
           </Card>
@@ -111,11 +110,11 @@ const Dashboard: React.FC = () => {
       </div>
       
       {/* Quick Actions */}
-      <Card>
-        <CardHeader>
+      <Card className="border-none shadow-none overflow-hidden box-border">
+        <CardHeader className="border-none">
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="border-none">
           <QuickActions />
         </CardContent>
       </Card>

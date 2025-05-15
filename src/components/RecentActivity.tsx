@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useData } from './DataProvider';
@@ -97,7 +96,7 @@ const RecentActivity: React.FC = () => {
           recentActivity.map((activity) => (
             <div 
               key={`${activity.note_id || activity.activity_id || ''}-${activity.created_at}`} 
-              className="flex items-start pb-4 last:border-0 last:pb-0"
+              className="flex items-start pb-4 last:pb-0"
             >
               <div className="h-2 w-2 mt-2 rounded-full bg-truckmaster-purple mr-3 flex-shrink-0" />
               <div>
