@@ -8,7 +8,9 @@ const Layout: React.FC = () => {
     <div className="flex min-h-screen bg-truckmaster-dark">
       <Navigation />
       <main className="flex-1 overflow-auto outline-none border-none bg-truckmaster-dark">
-        <Outlet />
+        <div className="bg-truckmaster-dark border-none">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

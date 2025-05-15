@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from './DataProvider';
 import { Truck, Users, Calendar, CheckCircle } from 'lucide-react';
@@ -34,11 +33,11 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="px-6 py-6 lg:px-8">
+    <div className="px-6 py-6 lg:px-8 bg-truckmaster-dark border-none">
       <h2 className="text-3xl font-bold mb-6">Dashboard</h2>
       
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 border-none">
         {/* Available Trucks Card - now opens a modal */}
         <div onClick={() => setIsTruckModalOpen(true)}>
           <MetricCard 
@@ -86,10 +85,10 @@ const Dashboard: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Chart and Activity Section - with fixed styling */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 border-none">
-        <div className="lg:col-span-2">
-          <Card className="border-none shadow-none overflow-hidden box-border">
+      {/* Chart and Activity Section - with consistent styling */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 border-none bg-transparent">
+        <div className="lg:col-span-2 border-none">
+          <Card className="border-none shadow-none overflow-hidden box-border bg-truckmaster-dark">
             <CardHeader className="border-none">
               <CardTitle>Loads Booked (Last 7 Days)</CardTitle>
             </CardHeader>
@@ -98,8 +97,8 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-        <div className="lg:col-span-1">
-          <Card className="h-full border-none shadow-none overflow-hidden box-border">
+        <div className="lg:col-span-1 border-none">
+          <Card className="h-full border-none shadow-none overflow-hidden box-border bg-truckmaster-dark">
             <CardHeader className="border-none">
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
@@ -110,16 +109,12 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
       
-      {/* Quick Actions - removed border and margin to prevent line */}
-      <div className="border-none bg-transparent">
-        <Card className="border-none shadow-none overflow-hidden box-border mt-0">
-          <CardHeader className="border-none">
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="border-none">
-            <QuickActions />
-          </CardContent>
-        </Card>
+      {/* Quick Actions - with consistent styling and no borders */}
+      <div className="border-none bg-transparent mt-0 pt-0">
+        <div className="border-none bg-truckmaster-dark shadow-none">
+          <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
+          <QuickActions />
+        </div>
       </div>
     </div>
   );

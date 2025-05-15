@@ -87,6 +87,31 @@
   .mb-6:last-of-type {
     margin-bottom: 1.5rem !important;
   }
+  
+  /* Global fix for all layout containers */
+  main > div, 
+  [class*="page-"],
+  [class*="container"],
+  [class*="content"],
+  [class*="wrapper"] {
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Fix for component stacking dividers */
+  div + div,
+  section + section {
+    border-top: none !important;
+  }
+  
+  /* Ensure consistent backgrounds */
+  main, 
+  main > div,
+  main > div > div {
+    background-color: #1A1F2C !important;
+  }
 }
 
 @layer utilities {
